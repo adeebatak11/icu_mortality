@@ -9,6 +9,8 @@ data/
 *.csv
 *.tsv
 *.xlsx
+# Ignore SQLite files
+*.sqlite3
 
 # Generated plots or model outputs
 outputs/
