@@ -11,3 +11,5 @@ nursecare                | nursecharting            | pasthistory
 patient                  | physicalexam             | respiratorycare
 respiratorycharting      | treatment                | vitalaperiodic
 vitalperiodic
+
+Utilizing SQL scripts from the eICU git submodule to assist with feature engineering.
