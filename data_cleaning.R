@@ -6,13 +6,13 @@ install_if_needed <- function(pkg) {
   }
 }
 
-invisible(lapply(c("DBI", "RSQLite", "tidyverse", "ggplot2"), install_if_needed))
+invisible(lapply(c("DBI", "RSQLite", "tidyverse", "ggplot2"), install_if_needed
+                 ))
 
 # Connect to the SQLite Database.
-con <- dbConnect(RSQLite::SQLite(), "/Users/adeebatak/Desktop/Projects/icu-readmission/data/eicu_v2_0_1.sqlite3")
+con <- dbConnect(RSQLite::SQLite(), "/Users/adeebatak/Desktop/Projects/icu-read
+                 mission/data/eicu_v2_0_1.sqlite3")
 
 # Tables in the SQLite Database
 tables <- dbListTables(con)
-
 print(tables)
-
