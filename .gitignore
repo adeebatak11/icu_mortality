@@ -1,0 +1,28 @@
+# RStudio local environment files
+.Rhistory
+.RData
+.Rproj.user/
+.Ruserdata
+
+# Raw and processed data files (don’t push patient data!)
+data/
+*.csv
+*.tsv
+*.xlsx
+
+# Generated plots or model outputs
+outputs/
+*.rds
+*.sav
+*.feather
+*.parquet
+
+# Quarto and R Markdown cache/output
+*.nb.html
+_cache/
+*.log
+*.aux
+*.out
+
+# MacOS system file
+.DS_Store
