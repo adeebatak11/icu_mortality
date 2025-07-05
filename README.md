@@ -1,1 +1,1 @@
-# ICU Readmission Prediction Project
+# ICU Mortality Prediction Project
