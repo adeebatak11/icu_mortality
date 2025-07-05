@@ -1,0 +1,4 @@
+[submodule "vendor/eicu_code"]
+	path = vendor/eicu_code
+	url = https://github.com/MIT-LCP/eicu-code.git
+	branch = v2.0
