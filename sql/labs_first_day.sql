@@ -70,8 +70,8 @@ FROM
      WHEN labname = 'sodium' and le.labresult >   200 THEN null -- mEq/L == mmol/L 'SODIUM'
      WHEN labname = 'BUN' and le.labresult >   300 THEN null -- 'BUN'
      WHEN labname = 'WBC x 1000' and le.labresult >  1000 THEN null -- 'WBC'
-   ELSE le.labresult
-   END AS labresult
+     ELSE CAST(le.labresult AS FLOAT)
+     END AS labresult
 
   FROM patient p
 

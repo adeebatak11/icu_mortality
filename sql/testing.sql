@@ -6,4 +6,4 @@ WHERE unitadmittime24 = (
     WHERE p2.uniquepid = patient.uniquepid
 )
 GROUP BY uniquepid
-HAVING COUNT(*) > 1
+HAVING COUNT(*) > 1;
