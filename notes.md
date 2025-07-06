@@ -13,16 +13,44 @@ admissiondrug \| admissiondx \| allergy \| apacheapsvar \| apachepatientresult \
 
 3.  Feature selection -\> table selection
 
+    -   
+
+        (7) Focus on **clinically-based model prespecification** and use data reduction (unsupervised learning) it the sample size does not allow you to use all the clinically pre-specified variables as single predictors.
+
     -   How do I pick the right features for my model? (Table selection follows feature selection.)
+
         -   According to Table S1 in (2), choose [these](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0262895#pone.0262895.s001) tables.
+
     -   Which of the vendor submodule *scripts* do I need for my tables?
+
     -   Which of the vendor submodule *engineered features* do I need for my tables?
-    -   Address the question of missingness - at what %age of missingness do I drop a feature? Should I make exceptions for critical variables?
 
-4.  Model of choice:\
-    Logistic regression + XGBoost + SHAP
+    -   
 
-5.  
+4.  Address the questions of:
+
+    -   Missingness - at what %age of missingness do I drop a feature? Should I make exceptions for critical variables?
+
+    -   Multicollinearity
+
+    -   Outliers
+
+5.  Model of choice: (1) Penalized logistic regression (2) Logistic regression + XGBoost + SHAP
+
+    How do you minimize bias?\
+    From each article, we defined five signaling items to indicate potential bias. We elaborate on these items in Table A.2:
+
+    (1) unclear or biased validation of model performance,
+
+    (2) difference in whether data-driven variable selection was performed (yes/no) before applying LR and ML algorithms,
+
+    (3) difference in handling of continuous variables before applying LR and ML algorithms,
+
+    (4) different predictors considered for LR and ML algorithms,
+
+    (5) whether corrections for imbalanced outcomes where used only for LR or only for ML algorithms\
+
+6.  
 
 ## Aside
 
@@ -30,9 +58,11 @@ admissiondrug \| admissiondx \| allergy \| apacheapsvar \| apachepatientresult \
 
 2.  There is a difference between my own model and ICU scoring systems (including APACHE IV/IVa).
 
+    "The baseline models were divided into non-gradient boosting baseline models, gradient boosting ensemble models, and illness severity scoring systems."
+
 3.  
 
-    (2) "The baseline models were divided into non-gradient boosting baseline models, gradient boosting ensemble models, and illness severity scoring systems."
+    (7) Selection of variables should not be done using statistical methods on the same data you intend to use to develop your prediction model unless your sample size is huge. Consider it 'double dipping".
 
 ## Questions
 
