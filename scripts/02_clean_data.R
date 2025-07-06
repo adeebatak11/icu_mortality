@@ -20,8 +20,13 @@ p_demographics <- p_demographics %>%
 
 #4. More than 80% of personal data was missing: Needs to be done when the whole feature set is established.
 
-#5. ICU stays shorter than 4 hours.
+# 5. ICU stays shorter than 4 hours.
 p_demographics <- p_demographics %>%
   filter(icu_los_hours >= 4)
 
-## TABLE 2: 
+## TABLE 2: labs in first day
+p_demographics <- p_demographics %>% left_join(p_labs, by = "patientunitstayid")
+
+
+
+

@@ -9,6 +9,9 @@ sql_demographics_query <- paste(readLines("sql/basic_demographics.sql"), collaps
 p_demographics <- dbGetQuery(con, sql_demographics_query)
 
 
+#load the labs table
+sql_labs_query <- paste(readLines("sql/labs_first_day.sql"), collapse = "\n")
+p_labs <- dbGetQuery(con, sql_labs_query)
 
 
 
@@ -19,10 +22,8 @@ p_demographics <- dbGetQuery(con, sql_demographics_query)
 
 
 
-
-
-
-
-
+# used for testing
+test_query <- paste(readLines("sql/testing.sql"), collapse = "\n")
+test_table <- dbGetQuery(con, test_query)
 
 dbDisconnect(con)
