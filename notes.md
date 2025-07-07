@@ -4,18 +4,24 @@
 
 Tables in the SQLite database:
 
-admissiondrug \| admissiondx \| allergy \| apacheapsvar \| apachepatientresult \| apachepredvar \| careplancareprovider \| careplaneol \| careplangeneral \| careplangoal \| careplaninfectiousdisease\| customlab \| diagnosis \| hospital \| infusiondrug \| intakeoutput \| lab \| medication \| microlab \| note \| nurseassessment \| nursecare \| nursecharting \| pasthistory \| patient \| physicalexam \| respiratorycare \| respiratorycharting \| treatment \| vitalaperiodic \| vitalperiodic
+admissiondrug \| admissiondx \| allergy \| ***apacheapsvar*** \| ***apachepatientresult*** \| ***apachepredvar*** \| careplancareprovider \| careplaneol \| careplangeneral \| careplangoal \| careplaninfectiousdisease\| customlab \| diagnosis \| hospital \| infusiondrug \| intakeoutput \| lab \| medication \| microlab \| note \| nurseassessment \| nursecare \| nursecharting \| pasthistory \| patient \| physicalexam \| respiratorycare \| respiratorycharting \| treatment \| vitalaperiodic \| vitalperiodic
 
-2.  [x] Cohort Selection (Inclusion/Exclusion criteria):
+2.  [ ] Cohort Selection (Inclusion/Exclusion criteria):
 
     -   Exclude patients: (1) under 18 years old, (2) missing the target variable (mortality indicator (alive/dead)), (3) with repeated ICU admissions (keep the first admission only), (4) with more than 80% of personal data was missing, & (5) with ICU stays shorter than 4 hours.
     -   **NOTE:** exclusion criterion 4 has **not** been implemented yet.
+    -   **NOTE**: "if a patient was admitted multiple times, each admission (that is, each unique stay) was included as a separate row in the dataset."
+    -   Inclusion criteria for patient admissions was such that each admission record of predicted and actual length of stay and mortality must contain real values.
 
-3.  Feature selection -\> table selection
+3.  Data Cleaning:
+
+    -   (9) "To handle the **sparsity** of the data, we imputed the missing values using the modal value along its respective axis. We applied this method of imputation with the assumption that the missing data elements are missing at random [8]."
+
+4.  Feature selection -\> table selection
 
     -   
 
-        (7) Focus on **clinically-based model prespecification** and use data reduction (unsupervised learning) it the sample size does not allow you to use all the clinically pre-specified variables as single predictors.
+        (7) Focus on **clinically-based model prespecification** and use data reduction (unsupervised learning) if the sample size does not allow you to use all the clinically pre-specified variables as single predictors.
 
     -   How do I pick the right features for my model? (Table selection follows feature selection.)
 
@@ -27,7 +33,7 @@ admissiondrug \| admissiondx \| allergy \| apacheapsvar \| apachepatientresult \
 
     -   
 
-4.  Address the questions of:
+5.  Address the questions of:
 
     -   Missingness - at what %age of missingness do I drop a feature? Should I make exceptions for critical variables?
 
@@ -35,20 +41,25 @@ admissiondrug \| admissiondx \| allergy \| apacheapsvar \| apachepatientresult \
 
     -   Outliers
 
-5.  Model of choice: (1) Penalized logistic regression (2) Logistic regression + XGBoost + SHAP
+    2.  Model of choice: (1) Penalized logistic regression (2) Logistic regression + XGBoost + SHAP
 
-    How do you minimize bias?\
-    From each article, we defined five signaling items to indicate potential bias. We elaborate on these items in Table A.2:
+        -   How do you minimize bias?
 
-    (1) unclear or biased validation of model performance,
+        -   How well does your model discriminate?
 
-    (2) difference in whether data-driven variable selection was performed (yes/no) before applying LR and ML algorithms,
+        -   Is your model calibrated?
 
-    (3) difference in handling of continuous variables before applying LR and ML algorithms,
+        -   From each article, we defined five signaling items to indicate potential bias. We elaborate on these items in Table A.2:
 
-    (4) different predictors considered for LR and ML algorithms,
+        1.  unclear or biased validation of model performance,
 
-    (5) whether corrections for imbalanced outcomes where used only for LR or only for ML algorithms\
+        2.  difference in whether data-driven variable selection was performed (yes/no) before applying LR and ML algorithms,
+
+        3.  difference in handling of continuous variables before applying LR and ML algorithms,
+
+        4.  different predictors considered for LR and ML algorithms,
+
+        5.  whether corrections for imbalanced outcomes where used only for LR or only for ML algorithms\
 
 6.  
 
@@ -60,9 +71,22 @@ admissiondrug \| admissiondx \| allergy \| apacheapsvar \| apachepatientresult \
 
     "The baseline models were divided into non-gradient boosting baseline models, gradient boosting ensemble models, and illness severity scoring systems."
 
-3.  
+3.  (7) Selection of variables should not be done using statistical methods on the same data you intend to use to develop your prediction model unless your sample size is huge. Consider it 'double dipping".
 
-    (7) Selection of variables should not be done using statistical methods on the same data you intend to use to develop your prediction model unless your sample size is huge. Consider it 'double dipping".
+4.  Sparsity of data
+
+5.  Model Calibration
+
+6.  Model Discrimination
+
+7.  Parsimonious model
+
+    ### APACHE: Acute Physiology and Critical Health Evaluation IV & IVa
+
+    1.  The three tables from the eICU database used in the study were Acute Physiology Score (APS) variables table, APACHE prediction variables table, and the APACHE patient results table. The APS variables and the prediction variables tables contain the inputs used for calculating the overall APACHE scores and prediction values. The patient results table contains the resulting predictions as well as actual patient outcomes.
+    2.  Type I Error: APACHE incorrectly predicting in-hospital death: False positive.\
+        Type II Error: APACHE incorrectly predicting in-hospital survival: False negative. [More serious]
+    3.  (9) our concern about performance stems from the utilization of a regressor trained on binary outcomes to output continuous value estimates.
 
 ## Questions
 
