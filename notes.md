@@ -4,7 +4,10 @@
 
 Tables in the SQLite database:
 
-admissiondrug \| admissiondx \| allergy \| ***apacheapsvar*** \| ***apachepatientresult*** \| ***apachepredvar*** \| careplancareprovider \| careplaneol \| careplangeneral \| careplangoal \| careplaninfectiousdisease\| customlab \| diagnosis \| hospital \| infusiondrug \| intakeoutput \| lab \| medication \| microlab \| note \| nurseassessment \| nursecare \| nursecharting \| pasthistory \| patient \| physicalexam \| respiratorycare \| respiratorycharting \| treatment \| vitalaperiodic \| vitalperiodic
+admissiondrug \| admissiondx \| allergy \| apacheapsvar \| ***apachepatientresult*** \| ***apachepredvar*** \| careplancareprovider \| careplaneol \| careplangeneral \| careplangoal \| careplaninfectiousdisease\| customlab \| diagnosis \| hospital \| infusiondrug \| intakeoutput \| lab \| medication \| microlab \| note \| nurseassessment \| nursecare \| nursecharting \| pasthistory \| ***patient*** \| physicalexam \| respiratorycare \| respiratorycharting \| treatment \| vitalaperiodic \| vitalperiodic
+
+Tables I am using for developing the model:\
+[apachepredvar]{.underline}
 
 2.  [ ] Cohort Selection (Inclusion/Exclusion criteria):
 
@@ -15,11 +18,15 @@ admissiondrug \| admissiondx \| allergy \| ***apacheapsvar*** \| ***apachepatien
 
 3.  Data Cleaning:
 
-    -   (9) "To handle the **sparsity** of the data, we imputed the missing values using the modal value along its respective axis. We applied this method of imputation with the assumption that the missing data elements are missing at random [8]."
+    -   
+
+        (9) "To handle the **sparsity** of the data, we imputed the missing values using the modal value along its respective axis. We applied this method of imputation with the assumption that the missing data elements are missing at random [8]."
 
 4.  Feature selection -\> table selection
 
-    -   (7) Focus on **clinically-based model prespecification** and use data reduction (unsupervised learning) if the sample size does not allow you to use all the clinically pre-specified variables as single predictors.
+    -   
+
+        (7) Focus on **clinically-based model prespecification** and use data reduction (unsupervised learning) if the sample size does not allow you to use all the clinically pre-specified variables as single predictors.
 
     -   How do I pick the right features for my model? (Table selection follows feature selection.)
 
@@ -31,7 +38,15 @@ admissiondrug \| admissiondx \| allergy \| ***apacheapsvar*** \| ***apachepatien
 
     -   (11): APS variables: "APACHE II, III and IV are based on the APS or acute physiology score (which uses 12 physiologic values), age, and chronic health status within one of 56 disease groups."
 
-    -   (11) APACHE prediction variables: "Provides variables underlying the APACHE predictions."
+    -   
+
+        (11) APACHE prediction variables: "Provides variables underlying the APACHE predictions."
+
+    -   
+
+        (11) APACHE IVa score: "APS score + age points + chronic health points
+
+    -   which one of these is better to use: p_apache_vars(apacheadmissiondx), p_apache_vars(admitdiagnosis)
 
 5.  Address the questions of:
 
@@ -53,7 +68,9 @@ admissiondrug \| admissiondx \| allergy \| ***apacheapsvar*** \| ***apachepatien
 
         1.  unclear or biased validation of model performance
 
-            -   (4) It should be clear that models are developed using training data only.
+            -   
+
+                (4) It should be clear that models are developed using training data only.
 
         2.  difference in whether data-driven variable selection was performed (yes/no) before applying LR and ML algorithms,
 
@@ -63,7 +80,7 @@ admissiondrug \| admissiondx \| allergy \| ***apacheapsvar*** \| ***apachepatien
 
         5.  whether corrections for imbalanced outcomes where used only for LR or only for ML algorithms\
 
-6.  
+6.  Make something like (15) to culminate project.
 
 ## Aside
 

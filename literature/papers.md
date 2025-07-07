@@ -11,6 +11,7 @@
 9.  Balkan, B., Essay, P., & Subbian, V. (2018). Evaluating ICU Clinical Severity Scoring Systems and Machine Learning Applications: APACHE IV/IVa Case Study. Annual International Conference of the IEEE Engineering in Medicine and Biology Society. IEEE Engineering in Medicine and Biology Society. Annual International Conference, 2018, 4073–4076. <https://doi.org/10.1109/EMBC.2018.8513324>
 10. David J. Hand. "Classifier Technology and the Illusion of Progress." Statist. Sci. 21 (1) 1 - 14, February 2006. <https://doi.org/10.1214/088342306000000060>
 11. Dataset website: <https://eicu-crd.mit.edu>
+12. APS score calcuation: <https://www.merckmanuals.com/professional/multimedia/table/acute-physiologic-assessment-and-chronic-health-evaluation-apache-ii-scoring-system>
 
 ------------------------------------------------------------------------
 
