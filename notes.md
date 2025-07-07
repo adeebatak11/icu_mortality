@@ -19,9 +19,7 @@ admissiondrug \| admissiondx \| allergy \| ***apacheapsvar*** \| ***apachepatien
 
 4.  Feature selection -\> table selection
 
-    -   
-
-        (7) Focus on **clinically-based model prespecification** and use data reduction (unsupervised learning) if the sample size does not allow you to use all the clinically pre-specified variables as single predictors.
+    -   (7) Focus on **clinically-based model prespecification** and use data reduction (unsupervised learning) if the sample size does not allow you to use all the clinically pre-specified variables as single predictors.
 
     -   How do I pick the right features for my model? (Table selection follows feature selection.)
 
@@ -31,11 +29,13 @@ admissiondrug \| admissiondx \| allergy \| ***apacheapsvar*** \| ***apachepatien
 
     -   Which of the vendor submodule *engineered features* do I need for my tables?
 
-    -   
+    -   (11): APS variables: "APACHE II, III and IV are based on the APS or acute physiology score (which uses 12 physiologic values), age, and chronic health status within one of 56 disease groups."
+
+    -   (11) APACHE prediction variables: "Provides variables underlying the APACHE predictions."
 
 5.  Address the questions of:
 
-    -   Missingness - at what %age of missingness do I drop a feature? Should I make exceptions for critical variables?
+    -   Missingness -\> at what %age of missingness do I drop a feature? Should I make exceptions for critical variables?
 
     -   Multicollinearity
 
@@ -51,7 +51,9 @@ admissiondrug \| admissiondx \| allergy \| ***apacheapsvar*** \| ***apachepatien
 
         -   From each article, we defined five signaling items to indicate potential bias. We elaborate on these items in Table A.2:
 
-        1.  unclear or biased validation of model performance,
+        1.  unclear or biased validation of model performance
+
+            -   (4) It should be clear that models are developed using training data only.
 
         2.  difference in whether data-driven variable selection was performed (yes/no) before applying LR and ML algorithms,
 
@@ -71,7 +73,9 @@ admissiondrug \| admissiondx \| allergy \| ***apacheapsvar*** \| ***apachepatien
 
     "The baseline models were divided into non-gradient boosting baseline models, gradient boosting ensemble models, and illness severity scoring systems."
 
-3.  (7) Selection of variables should not be done using statistical methods on the same data you intend to use to develop your prediction model unless your sample size is huge. Consider it 'double dipping".
+3.  
+
+    (7) Selection of variables should not be done using statistical methods on the same data you intend to use to develop your prediction model unless your sample size is huge. Consider it 'double dipping".
 
 4.  Sparsity of data
 
@@ -86,7 +90,8 @@ admissiondrug \| admissiondx \| allergy \| ***apacheapsvar*** \| ***apachepatien
     1.  The three tables from the eICU database used in the study were Acute Physiology Score (APS) variables table, APACHE prediction variables table, and the APACHE patient results table. The APS variables and the prediction variables tables contain the inputs used for calculating the overall APACHE scores and prediction values. The patient results table contains the resulting predictions as well as actual patient outcomes.
     2.  Type I Error: APACHE incorrectly predicting in-hospital death: False positive.\
         Type II Error: APACHE incorrectly predicting in-hospital survival: False negative. [More serious]
-    3.  (9) our concern about performance stems from the utilization of a regressor trained on binary outcomes to output continuous value estimates.
+    3.  
+        (9) our concern about performance stems from the utilization of a regressor trained on binary outcomes to output continuous value estimates.
 
 ## Questions
 
