@@ -29,7 +29,7 @@ p_apache_vars <- p_demographics %>% left_join(apache_var, by = "patientunitstayi
   rename(age = age.x,
          gender = gender.x)
 
-results_joined <-p_demographics %>% left_join(p_results, by = "patientunitstayid") %>% 
+results_joined <- p_demographics %>% left_join(p_results, by = "patientunitstayid") %>% 
   select(-actualhospitalmortality)
   
 #sanity check
