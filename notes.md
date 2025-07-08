@@ -24,7 +24,10 @@ Tables I am using for developing the model:\
 
 4.  Feature selection -\> table selection
 
-    -   
+    -   using apache IV prediction variables: \
+        drop: saps3today" "saps3yesterday, sicuday(1 for all),
+
+        gender, teachtype (0 for all), region (3 for all), bedcount (hospital bed count), admitsource,
 
         (7) Focus on **clinically-based model prespecification** and use data reduction (unsupervised learning) if the sample size does not allow you to use all the clinically pre-specified variables as single predictors.
 
