@@ -24,7 +24,7 @@ Tables I am using for developing the model:\
 
 4.  Feature selection -\> table selection
 
-    -   using apache IV prediction variables: \
+    -   using apache IV prediction variables:\
         drop: saps3today" "saps3yesterday, sicuday(1 for all),
 
         gender, teachtype (0 for all), region (3 for all), bedcount (hospital bed count), admitsource,
