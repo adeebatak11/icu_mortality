@@ -14,7 +14,7 @@
 12. Metnitz, P.G.H., Moreno, R.P., Almeida, E. et al. SAPS 3—From evaluation of the patient to evaluation of the intensive care unit. Part 1: Objectives, methods and cohort description. Intensive Care Med 31, 1336–1344 (2005). <https://doi.org/10.1007/s00134-005-2762-6>
 13. Moreno, R.P., Metnitz, P.G.H., Almeida, E. *et al.* SAPS 3—From evaluation of the patient to evaluation of the intensive care unit. Part 2: Development of a prognostic model for hospital mortality at ICU admission. *Intensive Care Med* **31**, 1345–1355 (2005). <https://doi.org/10.1007/s00134-005-2763-5>
 14. <https://intensivecarenetwork.com/Calculators/Files/Apache4.html>
-15. 
+15. Krikella, T., & Dubin, J. A. (2025). A personalized predictive model that jointly optimizes discrimination and calibration. *Statistics in Medicine*, *44*(10-12), e70077.
 
 ------------------------------------------------------------------------
 

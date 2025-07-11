@@ -18,16 +18,20 @@ Tables I am using for developing the model:\
 
 3.  Data Cleaning:
 
-    -   
-
-        (9) "To handle the **sparsity** of the data, we imputed the missing values using the modal value along its respective axis. We applied this method of imputation with the assumption that the missing data elements are missing at random [8]."
+    -    (9) "To handle the **sparsity** of the data, we imputed the missing values using the modal value along its respective axis. We applied this method of imputation with the assumption that the missing data elements are missing at random [8]."
 
 4.  Feature selection -\> table selection
 
-    -   using apache IV prediction variables:\
-        drop: saps3today" "saps3yesterday, sicuday(1 for all),
+    -   keep patientunitstayid as that is the identifying variable.
 
-        gender, teachtype (0 for all), region (3 for all), bedcount (hospital bed count), admitsource,
+    <!-- -->
+
+    -   using these apache IV prediction variables:\
+        use these: graftcount, age, admitdx, thrombolytics, aids, hepaticfailure, age, admitdiagnosis, thrombolytics, aids, hepaticfailure, lymphoma, metastaticcancer, leukemia, immunosuppression, cirrhosis, electivesurgery, readmit, midur, diabetes, amilocation
+
+    -   should there be an interaction between: amilocation, midur, thrombolytics?
+
+    -   drop aids as no one in the cohort has AIDS.
 
         (7) Focus on **clinically-based model prespecification** and use data reduction (unsupervised learning) if the sample size does not allow you to use all the clinically pre-specified variables as single predictors.
 
