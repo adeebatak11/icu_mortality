@@ -59,6 +59,7 @@ df_model <- df_model %>%
   ) %>% 
   select(
     patientunitstayid,
+    true_mortality,
     aps,
     age,
     gender,
@@ -78,6 +79,5 @@ df_model <- df_model %>%
     # amilocation, only use amilocation if you’re modeling the MI subgroup (1705 NA's)
     midur,
     readmit,
-    hosp_to_icu_admit_hours,
-    true_mortality
+    hosp_to_icu_admit_hours
   )

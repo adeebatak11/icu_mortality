@@ -9,7 +9,7 @@ admissiondrug \| admissiondx \| allergy \| apacheapsvar \| ***apachepatientresul
 Tables I am using for developing the model:\
 [apachepredvar]{.underline}
 
-2.  [ ] Cohort Selection (Inclusion/Exclusion criteria):
+2.  [x] Cohort Selection (Inclusion/Exclusion criteria):
 
     -   Exclude patients: (1) under 18 years old, (2) missing the target variable (mortality indicator (alive/dead)), (3) with repeated ICU admissions (keep the first admission only), (4) with more than 80% of personal data was missing, & (5) with ICU stays shorter than 4 hours.
     -   **NOTE:** exclusion criterion 4 has **not** been implemented yet.
@@ -18,13 +18,15 @@ Tables I am using for developing the model:\
 
 3.  Data Cleaning:
 
-    -    (9) "To handle the **sparsity** of the data, we imputed the missing values using the modal value along its respective axis. We applied this method of imputation with the assumption that the missing data elements are missing at random [8]."
+    -   <div>
+
+        9.  "To handle the **sparsity** of the data, we imputed the missing values using the modal value along its respective axis. We applied this method of imputation with the assumption that the missing data elements are missing at random [8]."
+
+        </div>
 
 4.  Feature selection -\> table selection
 
     -   keep patientunitstayid as that is the identifying variable.
-
-    <!-- -->
 
     -   using these apache IV prediction variables:\
         use these: graftcount, age, admitdx, thrombolytics, aids, hepaticfailure, age, admitdiagnosis, thrombolytics, aids, hepaticfailure, lymphoma, metastaticcancer, leukemia, immunosuppression, cirrhosis, electivesurgery, readmit, midur, diabetes, amilocation
@@ -33,10 +35,15 @@ Tables I am using for developing the model:\
 
     -   drop aids as no one in the cohort has AIDS.
 
-        (7) Focus on **clinically-based model prespecification** and use data reduction (unsupervised learning) if the sample size does not allow you to use all the clinically pre-specified variables as single predictors.
+    -   The right number of featrues to be selected further follows hwo amny observation we have! so read paper #6 for this.
+
+    -   <div>
+
+        7.  Focus on **clinically-based model prespecification** and use data reduction (unsupervised learning) if the sample size does not allow you to use all the clinically pre-specified variables as single predictors.
+
+        </div>
 
     -   How do I pick the right features for my model? (Table selection follows feature selection.)
-
         -   According to Table S1 in (2), choose [these](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0262895#pone.0262895.s001) tables.
 
     -   Which of the vendor submodule *scripts* do I need for my tables?
@@ -46,11 +53,9 @@ Tables I am using for developing the model:\
     -   (11): APS variables: "APACHE II, III and IV are based on the APS or acute physiology score (which uses 12 physiologic values), age, and chronic health status within one of 56 disease groups."
 
     -   
-
         (11) APACHE prediction variables: "Provides variables underlying the APACHE predictions."
 
     -   
-
         (11) APACHE IVa score: "APS score + age points + chronic health points
 
     -   which one of these is better to use: p_apache_vars(apacheadmissiondx), p_apache_vars(admitdiagnosis)
@@ -63,7 +68,9 @@ Tables I am using for developing the model:\
 
     -   Outliers
 
-    2.  Model of choice: (1) Penalized logistic regression (2) Logistic regression + XGBoost + SHAP
+    2.  Model of choice: Prognosis Prediction Model
+
+        (1) Penalized logistic regression (2) Logistic regression + XGBoost + SHAP
 
         -   How do you minimize bias?
 
@@ -71,7 +78,9 @@ Tables I am using for developing the model:\
 
         -   Is your model calibrated?
 
-        -   From each article, we defined five signaling items to indicate potential bias. We elaborate on these items in Table A.2:
+        -   #1 helps with sparse predictors
+
+        -   
 
         1.  unclear or biased validation of model performance
 
