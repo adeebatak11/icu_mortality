@@ -1,14 +1,21 @@
-# Load DB connection and libraries
-# Install the necessary libraries.
+# -------------------------------------------------------------------------
+# 01. Load Required Libraries (with auto-install helper)
+# -------------------------------------------------------------------------
+
 install_if_needed <- function(pkg) {
-  if (!require(pkg, character.only = TRUE)) {
+  if (!requireNamespace(pkg, quietly = TRUE)) {
     install.packages(pkg)
-    library(pkg, character.only = TRUE, )
   }
+  library(pkg, character.only = TRUE)
 }
 
-invisible(lapply(c("DBI", "RSQLite", "tidyverse", "ggplot2"), install_if_needed
-))
+pkgs_needed <- c("DBI", "RSQLite", "tidyverse", "ggplot2")
+invisible(lapply(pkgs_needed, install_if_needed))
 
-# Connect to the SQLite Database.
-con <- dbConnect(RSQLite::SQLite(), "/Users/adeebatak/Desktop/Projects/icu_mortality/data/eicu_v2_0_1.sqlite3")
+# -------------------------------------------------------------------------
+# 02. Connect to SQLite Database
+# -------------------------------------------------------------------------
+
+db_path <- "/Users/adeebatak/Desktop/Projects/icu_mortality/data/eicu_v2_0_1.sqlite3"
+stopifnot(file.exists(db_path))
+con <- dbConnect(RSQLite::SQLite(), db_path)

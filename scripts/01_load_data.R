@@ -1,16 +1,39 @@
-# Load DB connection and libraries
+# -------------------------------------------------------------------------
+# 01. Connect to Database
+# -------------------------------------------------------------------------
+
 source("scripts/00_db_connect.R")
 
-#loading the basic demographics table
-p_demographics <- dbGetQuery(con, paste(readLines("sql/basic_demographics.sql"), collapse = "\n"))
+# -------------------------------------------------------------------------
+# 02. Load Core Data Tables
+# -------------------------------------------------------------------------
 
-#load the APACHE prediction variables
-apache_var <- dbGetQuery(con, paste(readLines("sql/apache_pred_var.sql"), collapse = "\n"))
+# Load basic patient demographics
+p_demographics <- dbGetQuery(
+  con,
+  paste(readLines("sql/basic_demographics.sql"), collapse = "\n")
+)
 
-#load the APACHE score & predictions as well as actual outcomes
-p_results <- dbGetQuery(con, paste(readLines("sql/apache_patient_results.sql"), collapse = "\n"))
+# Load APACHE IVa prediction variables
+apache_var <- dbGetQuery(
+  con,
+  paste(readLines("sql/apache_pred_var.sql"), collapse = "\n")
+)
 
-# used for testing
-test_table <- dbGetQuery(con, paste(readLines("sql/testing.sql"), collapse = "\n"))
+# Load APACHE predictions and actual patient outcomes
+p_results <- dbGetQuery(
+  con,
+  paste(readLines("sql/apache_patient_results.sql"), collapse = "\n")
+)
+
+# Load a testing table for experimentation
+test_table <- dbGetQuery(
+  con,
+  paste(readLines("sql/testing.sql"), collapse = "\n")
+)
+
+# -------------------------------------------------------------------------
+# 03. Disconnect from Database
+# -------------------------------------------------------------------------
 
 dbDisconnect(con)

@@ -1,80 +1,100 @@
-# Load DB connection and libraries
+# -------------------------------------------------------------------------
+# 01. Load Data & Dependencies
+# -------------------------------------------------------------------------
+
 source("scripts/01_load_data.R")
 
-p_results_IVa <- p_results %>% filter(apacheversion == "IVa")
+# -------------------------------------------------------------------------
+# 02. Restrict to APACHE IVa Patients Only (standardizes cohort)
+# -------------------------------------------------------------------------
+
+p_results_IVa <- p_results %>% 
+  filter(apacheversion == "IVa")
+
+# -------------------------------------------------------------------------
+# 03. Filter Demographics Table to Analysis Cohort
+# -------------------------------------------------------------------------
 
 p_demographics <- p_demographics %>% 
-  filter(patientunitstayid %in% p_results_IVa$patientunitstayid,
-         age >= 18,
-         icu_los_hours >= 4,
-         hosp_to_icu_admit_hours >= 0,
-         ) %>% 
-  select(patientunitstayid, apacheadmissiondx, hosp_to_icu_admit_hours) 
+  filter(
+    patientunitstayid %in% p_results_IVa$patientunitstayid,
+    age >= 18,                        # Exclude peds
+    icu_los_hours >= 4,               # Exclude ultra-short ICU stays
+    hosp_to_icu_admit_hours >= 0      # Data sanity check
+  ) %>%
+  select(patientunitstayid, hosp_to_icu_admit_hours)
 
-vec_patientunitstayid <- p_demographics %>% 
-  pull(patientunitstayid)
+# -------------------------------------------------------------------------
+# 04. Restrict All Data Tables to Analysis Cohort
+# -------------------------------------------------------------------------
 
-p_results_IVa <- p_results_IVa %>% filter(patientunitstayid %in% vec_patientunitstayid)
+p_results_IVa <- p_results_IVa %>% filter(patientunitstayid %in% pull(p_demographics, patientunitstayid))
+apache_var <- apache_var %>% filter(patientunitstayid %in% pull(p_demographics, patientunitstayid))
 
-## Outcome Variable (trueicumortality)
-true_icu_mortality <- p_results_IVa %>% 
-  mutate(icumortality = case_when(
-    actualicumortality == "ALIVE" ~ 0,
-    actualicumortality == "EXPIRED" ~ 1,
-  )) %>% 
-  select(patientunitstayid, icumortality)
+# -------------------------------------------------------------------------
+# 05. Build Initial Modeling Dataset (merge all sources)
+# -------------------------------------------------------------------------
 
-## restrict apache var dataset to only those patients for whom we have a (true) outcome variable
-apache_var <- apache_var %>% filter(patientunitstayid %in% vec_patientunitstayid)
+df_model <- apache_var %>%
+  mutate(
+    aps = p_results_IVa$acutephysiologyscore, # Add APS score
+    icumortality = p_results_IVa$actualicumortality      # Add ICU mortality
+  ) %>%
+  left_join(p_demographics, by = "patientunitstayid")
 
+# -------------------------------------------------------------------------
+# 06. Clean Diagnosis (missing to NA, prep for grouping)
+# -------------------------------------------------------------------------
 
-df_model <- apache_var %>% 
-  mutate(aps = p_results_IVa$acutephysiologyscore,
-         true_mortality = true_icu_mortality$icumortality) %>% 
-  left_join(p_demographics, by = "patientunitstayid") 
-
-## for diagnosis grouping later
 df_model$admitdiagnosis[trimws(df_model$admitdiagnosis) == ""] <- NA
 
-#aps can't be negative
-#gender: Female =1, Male = 0 
+# -------------------------------------------------------------------------
+# 07. Finalize Feature Engineering & Variable Formatting
+# -------------------------------------------------------------------------
+
 df_model <- df_model %>%
-  filter(aps >= 0) %>% 
-  mutate(amilocation = case_when(
-    midur == 0 ~ NA_integer_, #NA when no MI in the past 6 months
-    midur == 1 ~ amilocation    
-  ), 	#Binary? → Factor, Multi-category? → Factor, Continuous/Score/Measurement? → Numeric.
-    admitdx_grouped = fct_lump_min(as.factor(admitdiagnosis), min = 11) %>% ## using data-driven grouping (and later penalized regression) for 221 unique admit diagnosis
-    fct_explicit_na(na_level = "Other"),
-  admitdx_grouped = fct_collapse(
-    admitdx_grouped,
-    "Drug/Alcohol Overdose/Withdrawal" = c("ODALCOH", "ODOTHER", "ODSEDHYP", "ODSTREET", "DRUGWITHD"),
-    "GI Bleeding" = c("LOWGIBLEED", "UGIBLEED", "UNKGIBLEED"),
-    "Sepsis" = c("SEPSISCUT", "SEPSISGI", "SEPSISPULM", "SEPSISUNK", "SEPSISUTI"),
-    "Cardiac Arrhythmia" = c("RHYTHATR", "RHYTHCON", "RHYTHVEN"),
-    "Pneumonia" = c("PNEUMASPIR", "PNEUMBACT"),
-    "Acute Cardiac Event" = c("CARDARREST", "AMI", "UNSTANGINA"),
-    "GI Surg Obstruct/Perf" = c("S-GIOBSTRX", "S-GIPERFOR")
-    # You can add more groupings if you want
-  ),
-    gender = as.factor(gender),
-    hepaticfailure = as.factor(hepaticfailure),
-    lymphoma = as.factor(lymphoma),
-    metastaticcancer = as.factor(metastaticcancer),
-    leukemia = as.factor(leukemia),
-    immunosuppression = as.factor(immunosuppression),
-    cirrhosis = as.factor(cirrhosis),
-    diabetes = as.factor(diabetes),
-    thrombolytics = as.factor(thrombolytics),
-    ima = as.factor(ima),
-    amilocation = as.factor(amilocation),
-    midur = as.factor(midur),
-    readmit = as.factor(readmit),
-    true_mortality = as.factor(true_mortality)
-  ) %>% 
+  filter(aps >= 0) %>%
+  mutate(
+    icumortality = case_when(
+      icumortality == "ALIVE"   ~ 0,
+      icumortality == "EXPIRED" ~ 1
+    ),
+    # MI subgroup: only define amilocation if recent MI
+    amilocation = case_when(
+      midur == 0 ~ NA_integer_,
+      midur == 1 ~ amilocation
+    ),
+    # Data-driven diagnosis grouping, then custom clinical collapsing
+    admitdx_grouped = fct_lump_min(as.factor(admitdiagnosis), min = 11) %>%
+      fct_explicit_na(na_level = "Other") %>%
+      fct_collapse(
+        "Drug/Alcohol Overdose/Withdrawal" = c("ODALCOH", "ODOTHER", "ODSEDHYP", "ODSTREET", "DRUGWITHD"),
+        "GI Bleeding" = c("LOWGIBLEED", "UGIBLEED", "UNKGIBLEED"),
+        "Sepsis" = c("SEPSISCUT", "SEPSISGI", "SEPSISPULM", "SEPSISUNK", "SEPSISUTI"),
+        "Cardiac Arrhythmia" = c("RHYTHATR", "RHYTHCON", "RHYTHVEN"),
+        "Pneumonia" = c("PNEUMASPIR", "PNEUMBACT"),
+        "Acute Cardiac Event" = c("CARDARREST", "AMI", "UNSTANGINA"),
+        "GI Surg Obstruct/Perf" = c("S-GIOBSTRX", "S-GIPERFOR")
+      ),
+    # Ensure all binary and categorical predictors are factors
+    gender             = as.factor(gender),
+    hepaticfailure     = as.factor(hepaticfailure),
+    lymphoma           = as.factor(lymphoma),
+    metastaticcancer   = as.factor(metastaticcancer),
+    leukemia           = as.factor(leukemia),
+    immunosuppression  = as.factor(immunosuppression),
+    cirrhosis          = as.factor(cirrhosis),
+    diabetes           = as.factor(diabetes),
+    thrombolytics      = as.factor(thrombolytics),
+    ima                = as.factor(ima),
+    amilocation        = as.factor(amilocation),
+    midur              = as.factor(midur),
+    readmit            = as.factor(readmit),
+    icumortality     = as.factor(icumortality)
+  ) %>%
   select(
     patientunitstayid,
-    true_mortality,
+    icumortality,
     aps,
     age,
     gender,
@@ -86,13 +106,9 @@ df_model <- df_model %>%
     immunosuppression,
     cirrhosis,
     diabetes,
-    #graftcount,  1    2    3    4    5    6 -> 2    6 1702    6    1    1 
     thrombolytics,
-    #electivesurgery, (84% missing, no value)
     ima,
-    # amilocation, only use amilocation if you’re modeling the MI subgroup (1705 NA's)
     midur,
     readmit,
     hosp_to_icu_admit_hours
   )
-
