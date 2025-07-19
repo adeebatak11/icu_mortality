@@ -27,10 +27,14 @@ true_icu_mortality <- p_results_IVa %>%
 ## restrict apache var dataset to only those patients for whom we have a (true) outcome variable
 apache_var <- apache_var %>% filter(patientunitstayid %in% vec_patientunitstayid)
 
+
 df_model <- apache_var %>% 
   mutate(aps = p_results_IVa$acutephysiologyscore,
          true_mortality = true_icu_mortality$icumortality) %>% 
   left_join(p_demographics, by = "patientunitstayid") 
+
+## for diagnosis grouping later
+df_model$admitdiagnosis[trimws(df_model$admitdiagnosis) == ""] <- NA
 
 #aps can't be negative
 #gender: Female =1, Male = 0 
@@ -39,8 +43,20 @@ df_model <- df_model %>%
   mutate(amilocation = case_when(
     midur == 0 ~ NA_integer_, #NA when no MI in the past 6 months
     midur == 1 ~ amilocation    
-  )) %>% 	#Binary? → Factor, Multi-category? → Factor, Continuous/Score/Measurement? → Numeric.
-  mutate(
+  ), 	#Binary? → Factor, Multi-category? → Factor, Continuous/Score/Measurement? → Numeric.
+    admitdx_grouped = fct_lump_min(as.factor(admitdiagnosis), min = 11) %>% ## using data-driven grouping (and later penalized regression) for 221 unique admit diagnosis
+    fct_explicit_na(na_level = "Other"),
+  admitdx_grouped = fct_collapse(
+    admitdx_grouped,
+    "Drug/Alcohol Overdose/Withdrawal" = c("ODALCOH", "ODOTHER", "ODSEDHYP", "ODSTREET", "DRUGWITHD"),
+    "GI Bleeding" = c("LOWGIBLEED", "UGIBLEED", "UNKGIBLEED"),
+    "Sepsis" = c("SEPSISCUT", "SEPSISGI", "SEPSISPULM", "SEPSISUNK", "SEPSISUTI"),
+    "Cardiac Arrhythmia" = c("RHYTHATR", "RHYTHCON", "RHYTHVEN"),
+    "Pneumonia" = c("PNEUMASPIR", "PNEUMBACT"),
+    "Acute Cardiac Event" = c("CARDARREST", "AMI", "UNSTANGINA"),
+    "GI Surg Obstruct/Perf" = c("S-GIOBSTRX", "S-GIPERFOR")
+    # You can add more groupings if you want
+  ),
     gender = as.factor(gender),
     hepaticfailure = as.factor(hepaticfailure),
     lymphoma = as.factor(lymphoma),
@@ -49,7 +65,6 @@ df_model <- df_model %>%
     immunosuppression = as.factor(immunosuppression),
     cirrhosis = as.factor(cirrhosis),
     diabetes = as.factor(diabetes),
-    graftcount = as.numeric(graftcount),  
     thrombolytics = as.factor(thrombolytics),
     ima = as.factor(ima),
     amilocation = as.factor(amilocation),
@@ -63,8 +78,7 @@ df_model <- df_model %>%
     aps,
     age,
     gender,
-    admitdiagnosis,
-    apacheadmissiondx,
+    admitdx_grouped,
     hepaticfailure,
     lymphoma,
     metastaticcancer,
@@ -72,7 +86,7 @@ df_model <- df_model %>%
     immunosuppression,
     cirrhosis,
     diabetes,
-    graftcount,
+    #graftcount,  1    2    3    4    5    6 -> 2    6 1702    6    1    1 
     thrombolytics,
     #electivesurgery, (84% missing, no value)
     ima,
@@ -81,3 +95,4 @@ df_model <- df_model %>%
     readmit,
     hosp_to_icu_admit_hours
   )
+

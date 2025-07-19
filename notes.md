@@ -35,7 +35,11 @@ Tables I am using for developing the model:\
 
     -   drop aids as no one in the cohort has AIDS.
 
-    -   The right number of featrues to be selected further follows hwo amny observation we have! so read paper #6 for this.
+    -   The right number of featrues to be selected further follows how many observation we have! so read paper #6 for this.
+
+        1.  Nagelkerke R² (“adjusted R²”): 0.44 (as per #8, page no. 1300). calculations from #6 to get n = 616.
+
+        2.  
 
     -   <div>
 
@@ -44,6 +48,7 @@ Tables I am using for developing the model:\
         </div>
 
     -   How do I pick the right features for my model? (Table selection follows feature selection.)
+
         -   According to Table S1 in (2), choose [these](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0262895#pone.0262895.s001) tables.
 
     -   Which of the vendor submodule *scripts* do I need for my tables?
@@ -53,9 +58,11 @@ Tables I am using for developing the model:\
     -   (11): APS variables: "APACHE II, III and IV are based on the APS or acute physiology score (which uses 12 physiologic values), age, and chronic health status within one of 56 disease groups."
 
     -   
+
         (11) APACHE prediction variables: "Provides variables underlying the APACHE predictions."
 
     -   
+
         (11) APACHE IVa score: "APS score + age points + chronic health points
 
     -   which one of these is better to use: p_apache_vars(apacheadmissiondx), p_apache_vars(admitdiagnosis)
