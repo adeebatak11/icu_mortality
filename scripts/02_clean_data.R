@@ -65,17 +65,20 @@ df_model <- df_model %>%
       midur == 1 ~ amilocation
     ),
     # Data-driven diagnosis grouping, then custom clinical collapsing
-    admitdx_grouped = fct_lump_min(as.factor(admitdiagnosis), min = 11) %>%
-      fct_explicit_na(na_level = "Other") %>%
-      fct_collapse(
-        "Drug/Alcohol Overdose/Withdrawal" = c("ODALCOH", "ODOTHER", "ODSEDHYP", "ODSTREET", "DRUGWITHD"),
-        "GI Bleeding" = c("LOWGIBLEED", "UGIBLEED", "UNKGIBLEED"),
-        "Sepsis" = c("SEPSISCUT", "SEPSISGI", "SEPSISPULM", "SEPSISUNK", "SEPSISUTI"),
-        "Cardiac Arrhythmia" = c("RHYTHATR", "RHYTHCON", "RHYTHVEN"),
-        "Pneumonia" = c("PNEUMASPIR", "PNEUMBACT"),
-        "Acute Cardiac Event" = c("CARDARREST", "AMI", "UNSTANGINA"),
-        "GI Surg Obstruct/Perf" = c("S-GIOBSTRX", "S-GIPERFOR")
-      ),
+    admitdx_grouped = fct_collapse(
+      as.factor(admitdiagnosis),
+      "Drug/Alcohol Overdose/Withdrawal" = c("ODALCOH", "ODOTHER", "ODSEDHYP", "ODSTREET", "DRUGWITHD"),
+      "GI Bleeding" = c("LOWGIBLEED", "UGIBLEED", "UNKGIBLEED"),
+      "Sepsis" = c("SEPSISCUT", "SEPSISGI", "SEPSISPULM", "SEPSISUNK", "SEPSISUTI"),
+      "Cardiac Arrhythmia" = c("RHYTHATR", "RHYTHCON", "RHYTHVEN"),
+      "Pneumonia" = c("PNEUMASPIR", "PNEUMBACT"),
+      "Acute Cardiac Event" = c("CARDARREST", "AMI", "UNSTANGINA"),
+      "GI Surg Obstruct/Perf" = c("S-GIOBSTRX", "S-GIPERFOR")
+      ) %>%
+      # THEN lump all remaining rare categories
+      fct_lump_min(min = 41, other_level = "Other") %>%
+      fct_explicit_na(na_level = "Other"),
+
     # Ensure all binary and categorical predictors are factors
     gender             = as.factor(gender),
     hepaticfailure     = as.factor(hepaticfailure),
@@ -100,7 +103,6 @@ df_model <- df_model %>%
     gender,
     admitdx_grouped,
     hepaticfailure,
-    lymphoma,
     metastaticcancer,
     leukemia,
     immunosuppression,
@@ -108,7 +110,6 @@ df_model <- df_model %>%
     diabetes,
     thrombolytics,
     ima,
-    midur,
     readmit,
     hosp_to_icu_admit_hours
   )
