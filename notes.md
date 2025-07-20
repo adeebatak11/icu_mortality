@@ -37,9 +37,11 @@ Tables I am using for developing the model:\
 
     -   The right number of featrues to be selected further follows how many observation we have! so read paper #6 for this.
 
-        1.  Nagelkerke R² (“adjusted R²”): 0.44 (as per #8, page no. 1300). calculations from #6 to get n = 616.
+        1.  as per criteria 1, 1599
 
-        2.  
+        2.  as per criteria 2, 3221
+
+        3.  as per criteria 3 (the available sample size can precisely estimate the overall risk in the population by key time-points of interest.
 
     -   <div>
 
