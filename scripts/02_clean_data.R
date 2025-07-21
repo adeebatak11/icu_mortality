@@ -48,11 +48,6 @@ df_model <- apache_var %>%
 
 df_model$admitdiagnosis[trimws(df_model$admitdiagnosis) == ""] <- NA
 
-# -------------------------------------------------------------------------
-# 08. Pull patientunitstayid before final select()
-# -------------------------------------------------------------------------
-
-patientunitstayid <- pull(df_model, patientunitstayid)
 
 # -------------------------------------------------------------------------
 # 07. Finalize Feature Engineering & Variable Formatting
@@ -103,21 +98,4 @@ df_model <- df_model %>%
     midur              = as.factor(midur),
     readmit            = as.factor(readmit),
     icumortality     = as.factor(icumortality)
-  ) %>%
-  select(
-    icumortality,
-    aps,
-    age,
-    gender,
-    admitdx_grouped,
-    hepaticfailure,
-    metastaticcancer,
-    leukemia,
-    immunosuppression,
-    cirrhosis,
-    diabetes,
-    thrombolytics,
-    ima,
-    readmit,
-    log_icu_hours
   )

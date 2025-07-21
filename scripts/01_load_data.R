@@ -25,13 +25,6 @@ p_results <- dbGetQuery(
   con,
   paste(readLines("sql/apache_patient_results.sql"), collapse = "\n")
 )
-
-# Load a testing table for experimentation
-test_table <- dbGetQuery(
-  con,
-  paste(readLines("sql/testing.sql"), collapse = "\n")
-)
-
 # -------------------------------------------------------------------------
 # 03. Disconnect from Database
 # -------------------------------------------------------------------------
