@@ -43,6 +43,18 @@ Tables I am using for developing the model:\
 
         3.  as per criteria 3 (the available sample size can precisely estimate the overall risk in the population by key time-points of interest.
 
+    -   Ended up with these:\
+        icumortality, aps, age, gender, admitdx_grouped, hepaticfailure, metastaticcancer, leukemia, immunosuppression, cirrhosis, diabetes, thrombolytics, ima, readmit, hosp_to_icu_admit_hours\
+        \
+        Variables were dropped for various reasons during model collaboration & best practices(?).
+
+        -    lymphoma, midur: Variables were too sparse
+
+        -   admitdx_grouped: admit diagnosis were placed in broader categories through (from data-driven & frequency analysis(?) went from 220 categories to 11. best practices as per TRIPOD as well.
+
+    -   Right before feedback from running first logistic model:\
+        sample size = 1718, no. of events = 79, no. of predictors & predictor parameters = 14 & 23.
+
     -   <div>
 
         7.  Focus on **clinically-based model prespecification** and use data reduction (unsupervised learning) if the sample size does not allow you to use all the clinically pre-specified variables as single predictors.
@@ -92,10 +104,6 @@ Tables I am using for developing the model:\
         -   
 
         1.  unclear or biased validation of model performance
-
-            -   
-
-                (4) It should be clear that models are developed using training data only.
 
         2.  difference in whether data-driven variable selection was performed (yes/no) before applying LR and ML algorithms,
 
