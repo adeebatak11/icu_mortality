@@ -49,6 +49,12 @@ df_model <- apache_var %>%
 df_model$admitdiagnosis[trimws(df_model$admitdiagnosis) == ""] <- NA
 
 # -------------------------------------------------------------------------
+# 08. Pull patientunitstayid before final select()
+# -------------------------------------------------------------------------
+
+patientunitstayid <- pull(df_model, patientunitstayid)
+
+# -------------------------------------------------------------------------
 # 07. Finalize Feature Engineering & Variable Formatting
 # -------------------------------------------------------------------------
 
@@ -75,14 +81,17 @@ df_model <- df_model %>%
       "Acute Cardiac Event" = c("CARDARREST", "AMI", "UNSTANGINA"),
       "GI Surg Obstruct/Perf" = c("S-GIOBSTRX", "S-GIPERFOR")
       ) %>%
-      # THEN lump all remaining rare categories
+      # lump all remaining rare categories
       fct_lump_min(min = 41, other_level = "Other") %>%
       fct_explicit_na(na_level = "Other"),
-
+    
+    # continuous variable hosp_to_icu_admit_hours is log transformed for right skewness.
+    # log1p =log(1+x), to handle zeroes. 
+    log_icu_hours = log1p(hosp_to_icu_admit_hours),
+    
     # Ensure all binary and categorical predictors are factors
     gender             = as.factor(gender),
     hepaticfailure     = as.factor(hepaticfailure),
-    lymphoma           = as.factor(lymphoma),
     metastaticcancer   = as.factor(metastaticcancer),
     leukemia           = as.factor(leukemia),
     immunosuppression  = as.factor(immunosuppression),
@@ -96,7 +105,6 @@ df_model <- df_model %>%
     icumortality     = as.factor(icumortality)
   ) %>%
   select(
-    patientunitstayid,
     icumortality,
     aps,
     age,
@@ -111,5 +119,5 @@ df_model <- df_model %>%
     thrombolytics,
     ima,
     readmit,
-    hosp_to_icu_admit_hours
+    log_icu_hours
   )
