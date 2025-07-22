@@ -1,5 +1,5 @@
 # -------------------------------------------------------------------------
-# Minimum sample size calculation for developing a multivariable prediction
+# 01. Minimum sample size calculation for developing a multivariable prediction
 # model. Based on: 1. Methods from Riley et al. (2019, Stat Med 38:1276-1296) 2.
 # Model parameters (R^2, event rate) taken from APACHE IV validation set
 # (Zimmerman et al., 2006)
@@ -49,4 +49,41 @@ n_2 <- p/((S_vh_min-1)*log(1-(R_sq_cs_adj/S_vh_min)))
 n_3 <- ((1.96/MOE)^2)*true_outcome_prop*(1-true_outcome_prop)
 print(max(n_1, n_2, n_3))
 
-      
+# -------------------------------------------------------------------------
+# 02. Plotting key figures
+# -------------------------------------------------------------------------
+source("scripts/04_run_model.R")
+
+# Correlation heatmap
+df_num <- dummy_cols(df_model, remove_first_dummy = TRUE, remove_selected_columns = TRUE)
+df_num <- df_num %>% select(where(is.numeric))
+cor_matrix_full <- cor(df_num, use = "pairwise.complete.obs")
+corrplot(cor_matrix_full, method = "color", tl.cex=0.6)
+
+
+# prediction cutoff tradeoff table 
+cutoffs <- c(0.01, 0.025, youden_cutoff, 0.1, 0.2)
+results <- data.frame(
+  Cutoff = cutoffs,
+  Predicted_High_Risk = NA,
+  True_Deaths_Captured = NA,
+  Sensitivity = NA,
+  Specificity = NA
+)
+
+for (i in seq_along(cutoffs)) {
+  threshold <- cutoffs[i]
+  predicted <- ifelse(pred_lasso > threshold, 1, 0)
+  cm <- table(Predicted = predicted, Actual = df_model$icumortality)
+  # Extract confusion matrix elements
+  TP <- cm["1", "1"]
+  TN <- cm["0", "0"]
+  FP <- cm["1", "0"]
+  FN <- cm["0", "1"]
+  # Fill in the results
+  results$Predicted_High_Risk[i] <- sum(predicted)
+  results$True_Deaths_Captured[i] <- TP
+  results$Sensitivity[i] <- ifelse((TP + FN) == 0, NA, TP / (TP + FN))
+  results$Specificity[i] <- ifelse((TN + FP) == 0, NA, TN / (TN + FP))
+}
+print(results)
