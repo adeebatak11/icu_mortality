@@ -92,6 +92,8 @@ Tables I am using for developing the model:\
     2.  Model of choice: Prognosis Prediction Model
 
         (1) Penalized logistic regression (2) Logistic regression + XGBoost + SHAP
+            -   I chose a LASSO penalized logistic regression with tuning parameter with the lowest cross-validated error (\\lambda = lambda.min = 0.006078998).
+            -   LASSO is a tool to find the best subset of variables for risk stratification and prediction—not classic statistical significance, but actual, practical “who’s at high risk” classification.
 
         -   How do you minimize bias?
 
@@ -158,3 +160,13 @@ Given that I will probably have 1700 entries or less, no point in doing this. Ke
 4.  
 
 5.  "It is essential to develop mortality prediction models that are both accurate and interpretable. Model interpretability can either be pursued by developing intrinsically interpretable models (e.g., Logistic Regression and Decision Tree) or by using interpretable surrogate models as post-hoc explanation tools (e.g., SHapley Additive exPlanations (SHAP) and Local Interpretable Model-Agnostic Explanations (LIME)) to explain the black box models."
+
+1-page EDA summary (tables + plots)
+
+	•	Model performance table: (AUC, sensitivity, specificity at chosen cutoffs)
+
+	•	Calibration plot (and stats)
+
+	•	Odds ratio table with CIs for predictors
+
+	•	Short discussion of clinical implications and limitations
