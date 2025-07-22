@@ -1,36 +1,25 @@
 source("scripts/03_feature_selection.R")
 
-# the most simple logistic regression model
+# Model 1: the most simple logistic regression model
 formula1 <- icumortality ~ .
 model1 <- glm(formula1, data = df_model, family = binomial)
-summary(model1)
-pred1 <- predict(model1, type = "response")
-roc_obj <- roc(df_model$icumortality, pred1)
+summary(model1) # too many variables with non-significant p-values, high standard errors, and/or sparse predictors.
 
-# Get best threshold by Youden's J
-best_coords <- coords(roc_obj, "best", ret = c("threshold", "sensitivity", "specificity"), transpose = FALSE)
-best_cutoff <- best_coords["threshold"]
+# Model 2: Penalized logistic regression with LASSO
+set.seed(42) # For reproducibility
+X <- model.matrix(icumortality ~ ., data = df_model)[, -1] # Remove intercept
+y <- as.numeric(as.character(df_model$icumortality)) # Should be 0/1
 
-# Plot ROC with extras
-plot(
-  roc_obj,
-  print.auc = TRUE,      
-  col = "#0072B2",       
-  lwd = 3,               
-  main = "ROC Curve for ICU Mortality Model",
-  xlab = "1 - Specificity (False Positive Rate)",
-  ylab = "Sensitivity (True Positive Rate)",
-  legacy.axes = FALSE
+cvfit <- cv.glmnet(X, y, family = "binomial", alpha = 1, nfolds = 10)  # alpha=1 is LASSO
+plot(cvfit)
+
+#Get the non-zero ceoffs from lasso reg
+coefs_lasso <- coef(cvfit, s = "lambda.min") 
+coefs_lasso <- data.frame(
+  Variable = rownames(coefs)[which(as.numeric(coefs) != 0)],
+  Coefficient = as.numeric(coefs)[which(as.numeric(coefs) != 0)]
 )
-abline(a = 0, b = 1, lty = 2, col = "grey70") # Add diagonal (random classifier)
 
-# Add the best threshold as a point
-points(1 - best_coords["specificity"], best_coords["sensitivity"], 
-       col = "red", pch = 19, cex = 1.3)
-text(1 - best_coords["specificity"], best_coords["sensitivity"],
-     labels = sprintf("Best cutoff: %.2f", best_coords["threshold"]),
-     pos = 4, col = "red")
-
-# using best cutoff for identifying high-risk patients
-# Classify as 1 (predicted death) if probability > best_cutoff
-pred_class <- ifelse(pred1 > best_cutoff, 1, 0)
+pred_lasso <- as.vector(predict(cvfit, newx = X, s = "lambda.min", type = "response"))
+roc_obj_lasso <- roc(y, pred_lasso)
+plot(roc_obj_lasso, print.auc = TRUE, main = "LASSO ROC Curve")
