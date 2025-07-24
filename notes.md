@@ -48,7 +48,7 @@ Tables I am using for developing the model:\
         \
         Variables were dropped for various reasons during model collaboration & best practices(?).
 
-        -    lymphoma, midur: Variables were too sparse
+        -   lymphoma, midur: Variables were too sparse
 
         -   admitdx_grouped: admit diagnosis were placed in broader categories through (from data-driven & frequency analysis(?) went from 220 categories to 11. best practices as per TRIPOD as well.
 
@@ -94,6 +94,32 @@ Tables I am using for developing the model:\
         (1) Penalized logistic regression (2) Logistic regression + XGBoost + SHAP
             -   I chose a LASSO penalized logistic regression with tuning parameter with the lowest cross-validated error (\\lambda = lambda.min = 0.006078998).
             -   LASSO is a tool to find the best subset of variables for risk stratification and prediction—not classic statistical significance, but actual, practical “who’s at high risk” classification.
+            -   The optimal cutoff for predicted ICU mortality risk was determined using the threshold that maximized the Youden Index on the ROC curve (threshold = 0.052). other thresholds were tried as well: 0.01, 0.025, 0.10, 0.20 but Youden's statistic generated the best prediction (wrt sensitivity and specififcity and cautioning on the side of err)
+            -   because of bad PPV (16.39%), risk tiers rather than just binary conclusions were evalauted.
+            -   limitation: My model has no external validation: Prediction model development studies without external validation aim to develop a prognostic or diagnostic prediction model from the dataset at hand: the development set. Such studies commonly aim to identify important predictors for the outcome under study, assign mutually adjusted weights per predictor in a multivariable analysis, develop a final prediction model, and quantify the predictive performance (e.g., discrimination, calibration, classification) of that model in the development set. As model overfitting may occur, particularly in small datasets, development studies ideally include internal validation using some form of data re-sampling techniques, such as bootstrapping, jack-knife, or cross-validation, to quantify any optimism in the predictive performance of the developed model.
+            -   Calibration plots are often supplemented by a formal statistical test, the Hosmer-Lemeshow test for logistic regression.
+            -   “While both models achieved nearly identical discrimination (AUC), the LASSO model automatically dropped statistically uninformative predictors, reducing the risk of overfitting and making the model more interpretable and robust.”: LASSO gives parsimony and interpretability, with no loss in predictive power.
+            -   Despite class imbalance, the unweighted LASSO model stratifies patients effectively: High-risk group had a 41.4% observed mortality, compared to 1.5% in the Low-risk group. This risk gradient demonstrates strong clinical utility even with modest PR AUC.”
+        (2) Bootstrapping: Bootstrapping provides robust internal validation for predictive models, especially when sample size is limited.
+            -   “The GLM model achieved a mean AUC of 0.878, with a trimmed (5th–95th percentile) confidence interval of 0.844–0.905 based on 1,000 bootstrap resamples.
+
+                The LASSO model achieved a mean AUC of 0.855, with a trimmed 90% confidence interval of 0.828–0.894.
+
+                Because of class imbalance and limited outcome events (n = 79), some bootstrap resamples yielded unstable AUC estimates for the LASSO model. To present a more representative range of model performance, we report a trimmed AUC confidence interval. This provides a clearer picture of typical model discrimination while acknowledging variability.
+
+            -   Risk Group Performance
+
+                Using bootstrap resampling (1,000 iterations), we evaluated the model’s ability to stratify patients into clinically meaningful risk groups based on predicted mortality probabilities:
+
+                	•	Low Risk (\<10%): 2.3% mortality (95% CI: 1.4%–3.3%)
+
+                	•	Moderate Risk (10–30%): 19.6% mortality (95% CI: 9.7%–30.0%)
+
+                	•	High Risk (\>30%): 51.3% mortality (95% CI: 3.5%–80.0%)
+
+                These results demonstrate strong separation between risk groups. The wide confidence interval for the high-risk group reflects instability in bootstrap samples where few patients were classified as high-risk. In 26 of 1,000 resamples, this group was empty and excluded from calculations. Despite this, the trend across risk strata remained consistent, with increasing predicted risk corresponding to observed mortality.
+
+            -   “Bootstrapped calibration analysis revealed a median intercept of 0.49 and a median slope of 1.21, suggesting that the model systematically under-predicted risk and produced narrower-than-ideal probability distributions. While calibration was generally consistent across bootstrap resamples, 27 iterations failed due to separation or lack of variability in predictions, reflecting occasional instability in model fitting.”
 
         -   How do you minimize bias?
 
@@ -163,10 +189,14 @@ Given that I will probably have 1700 entries or less, no point in doing this. Ke
 
 1-page EDA summary (tables + plots)
 
-	•	Model performance table: (AUC, sensitivity, specificity at chosen cutoffs)
+```         
+•   Model performance table: (AUC, sensitivity, specificity at chosen cutoffs)
 
-	•	Calibration plot (and stats)
+•   Calibration plot (and stats)
 
-	•	Odds ratio table with CIs for predictors
+•   Odds ratio table with CIs for predictors
 
-	•	Short discussion of clinical implications and limitations
+•   Short discussion of clinical implications and limitations
+```
+
+I built a live early-warning score with MIMIC/​eICU vitals, REST endpoint, color-coded dashboard, and an FDA-ready validation plan.”
