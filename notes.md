@@ -111,11 +111,13 @@ Tables I am using for developing the model:\
 
                 Using bootstrap resampling (1,000 iterations), we evaluated the model’s ability to stratify patients into clinically meaningful risk groups based on predicted mortality probabilities:
 
-                	•	Low Risk (\<10%): 2.3% mortality (95% CI: 1.4%–3.3%)
+                ```         
+                •   Low Risk (\<10%): 2.3% mortality (95% CI: 1.4%–3.3%)
 
-                	•	Moderate Risk (10–30%): 19.6% mortality (95% CI: 9.7%–30.0%)
+                •   Moderate Risk (10–30%): 19.6% mortality (95% CI: 9.7%–30.0%)
 
-                	•	High Risk (\>30%): 51.3% mortality (95% CI: 3.5%–80.0%)
+                •   High Risk (\>30%): 51.3% mortality (95% CI: 3.5%–80.0%)
+                ```
 
                 These results demonstrate strong separation between risk groups. The wide confidence interval for the high-risk group reflects instability in bootstrap samples where few patients were classified as high-risk. In 26 of 1,000 resamples, this group was empty and excluded from calculations. Despite this, the trend across risk strata remained consistent, with increasing predicted risk corresponding to observed mortality.
 
