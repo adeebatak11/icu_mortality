@@ -9,7 +9,8 @@ install_if_needed <- function(pkg) {
   library(pkg, character.only = TRUE)
 }
 
-pkgs_needed <- c("DBI", "RSQLite", "tidyverse", "ggplot2", "pROC", "glmnet", "corrplot", "fastDummies", "caret", "boot", "DescTools")
+pkgs_needed <- c("DBI", "RSQLite", "tidyverse", "ggplot2", "pROC", "glmnet",
+                 "corrplot", "fastDummies", "caret", "boot", "DescTools")
 invisible(lapply(pkgs_needed, install_if_needed))
 
 # -------------------------------------------------------------------------
