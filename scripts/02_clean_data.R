@@ -78,8 +78,7 @@ df_model <- df_model %>%
       ) %>%
       # lump all remaining rare categories
       fct_lump_min(min = 41, other_level = "Other") %>%
-      fct_explicit_na(na_level = "Other"),
-    
+      fct_na_value_to_level(level = "Other"),    
     # continuous variable hosp_to_icu_admit_hours is log transformed for right skewness.
     # log1p =log(1+x), to handle zeroes. 
     log_icu_hours = log1p(hosp_to_icu_admit_hours),

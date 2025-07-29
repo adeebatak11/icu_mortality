@@ -23,7 +23,7 @@ apache_var <- dbGetQuery(
 # Load APACHE predictions and actual patient outcomes
 p_results <- dbGetQuery(
   con,
-  paste(readLines("sql/apache_patient_results.sql"), collapse = "\n")
+  paste(readLines("sql/apache_patient_results.sql"), collapse = "\n") 
 )
 # -------------------------------------------------------------------------
 # 03. Disconnect from Database
