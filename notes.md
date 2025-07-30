@@ -131,7 +131,11 @@ Tables I am using for developing the model:\
 
         -   #1 helps with sparse predictors
 
-        -   
+        -   DCA: Relative to ‘treat none’ (no action based on the score), the model yielded 2–3 additional correct monitoring decisions per 100 patients at 5%, and about 1 additional correct escalation per 100 patients at 20%. Compared with ‘treat all,’ the model would avoid \~56 and \~81 unnecessary escalations per 100 patients at the 5% and 20% thresholds, respectively.
+
+        -   The LASSO curve sits above Treat-All and Treat-None from \~1% to 50% → using the model provides greater net benefit than either default strategy across that range.
+
+        -   At 5%, you accept a high false-positive cost (1:19) to catch more true cases; the model yields \~2.5 extra correct “monitor” decisions per 100 vs doing nothing, while avoiding \~56 unnecessary escalations per 100 vs treat-all. At 20%, you accept fewer false positives (1:4); you get \~1 extra correct “escalate” decision per 100, and avoid \~81 unnecessary escalations per 100 vs treat-all, while only 3–4% are flagged.
 
         1.  unclear or biased validation of model performance
 
@@ -141,7 +145,9 @@ Tables I am using for developing the model:\
 
         4.  different predictors considered for LR and ML algorithms,
 
-        5.  whether corrections for imbalanced outcomes where used only for LR or only for ML algorithms\
+        5.  whether corrections for imbalanced outcomes where used only for LR or only for ML algorithms
+
+        6.  
 
 6.  Make something like (15) to culminate project.
 

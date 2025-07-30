@@ -11,7 +11,7 @@ install_if_needed <- function(pkg) {
 
 pkgs_needed <- c("DBI", "RSQLite", "tidyverse", "ggplot2", "pROC", "glmnet",
                  "corrplot", "fastDummies", "caret", "boot", "DescTools", 
-                 "knitr", "kableExtra", "gt")
+                 "knitr", "kableExtra", "gt", "webshot2")
 invisible(lapply(pkgs_needed, install_if_needed))
 
 # -------------------------------------------------------------------------

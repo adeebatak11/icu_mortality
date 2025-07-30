@@ -1,14 +1,9 @@
 # -------------------------------------------------------------------------
-# 01. Load Model Objects
-# -------------------------------------------------------------------------
+# 01. Load Previous Script
 source("scripts/04_run_model.R")  # Ensure df_model is ready
 
 # -------------------------------------------------------------------------
-# 02. Internal Validation via Bootstrapping
-# -------------------------------------------------------------------------
-
-## ROC-AUC comparison between GLM and LASSO
-
+# 02. ROC-AUC comparison between GLM and LASSO
 ## AUC Function for GLM
 glm_boot_auc <- function(data, indices) {
   d <- data[indices, ]
@@ -17,8 +12,9 @@ glm_boot_auc <- function(data, indices) {
   roc_d <- roc(d$icumortality, pred, levels = c(0,1), direction = "<")
   as.numeric(auc(roc_d))
 }
+
 # GLM AUC 95% CI
-boot_glm_auc <- boot(data = df_model, statistic = glm_boot_auc, R = 1000)
+boot_glm_auc <- boot(data = df_model, statistic = glm_boot_auc, R = 100)
 mean_glm_auc <- mean(boot_glm_auc$t, na.rm = TRUE)
 ci_glm_trimmed   <- quantile(boot_glm_auc$t, probs = c(0.05, 0.95), na.rm = TRUE)
 
@@ -32,11 +28,13 @@ lasso_boot_auc <- function(data, indices) {
   roc_d <- roc(y_boot, pred, levels = c(0,1), direction = "<")
   as.numeric(auc(roc_d))
 }
+
 # LASSO AUC 95% CI
-boot_lasso_auc <- boot(data = df_model, statistic = lasso_boot_auc, R = 1000)
+boot_lasso_auc <- boot(data = df_model, statistic = lasso_boot_auc, R = 100)
 mean_lasso_auc <- mean(boot_lasso_auc$t, na.rm = TRUE)
 ci_lasso_trimmed <- quantile(boot_lasso_auc$t, probs = c(0.05, 0.95), na.rm = TRUE)
 
+# Visualize AUC comparison
 auc_plot_df <- data.frame(
   Model = c("GLM", "LASSO"),
   MeanAUC = c(mean_glm_auc, mean_lasso_auc),
@@ -49,7 +47,6 @@ auc_plot_df <- data.frame(
                         (CI_Upper - CI_Lower) / 2)
   )
 
-# Visualize AUC comparison
 p1 <- ggplot(auc_plot_df, aes(x = Model, y = MeanAUC)) +
   geom_point(size = 4.5, shape = 21, fill = "black", color = "black", stroke = 1.2) +
   geom_errorbar(aes(ymin = CI_Lower, ymax = CI_Upper), width = 0.3, linewidth = 1) +
@@ -84,25 +81,127 @@ legend("bottomright",
 
 #dev.off()
 
-# -------------------------------------------------------------------------
-# 03. Evaluate Calibration
-# -------------------------------------------------------------------------
 
-#1
+# -------------------------------------------------------------------------
+# 03. CITL + Slope
 
+boot_citl_slope <- function(data, indices) {
+  d <- data[indices, ]
+  y <- as.numeric(as.character(d$icumortality))
+  p <- d$pred_lasso
+  lp <- qlogis(pmin(pmax(p, 1e-6), 1 - 1e-6))
+  
+  # CITL
+  fit_citl <- glm(y ~ offset(lp), family = binomial())
+  citl <- coef(fit_citl)[1]
+  
+  # Slope
+  fit_slope <- glm(y ~ lp, family = binomial())
+  slope <- coef(fit_slope)[2]
+  
+  return(c(CITL = citl, Slope = slope))
+}
+
+# Run bootstrap
+boot_res <- boot(data = df_boot, statistic = boot_citl_slope, R = 100)
+
+
+# 95% percentile confidence intervals
+citl_ci   <- quantile(boot_res$t[, 1], probs = c(0.025, 0.975), na.rm = TRUE)
+slope_ci  <- quantile(boot_res$t[, 2], probs = c(0.025, 0.975), na.rm = TRUE)
+
+# Report
+cat(sprintf("CITL:  %.3f (95%% CI: %.3f to %.3f)\n", boot_res$t0[1], citl_ci[1], citl_ci[2]))
+cat(sprintf("Slope: %.3f (95%% CI: %.3f to %.3f)\n", boot_res$t0[2], slope_ci[1], slope_ci[2]))
+
+
+
+# -------------------------------------------------------------------------
+# 04. Decile Plot
+
+#Calculate summary stats per decile
+calib_bin <- df_model %>%
+  mutate(
+    y = y_full,
+    pred = pred_lasso,
+    decile = ntile(pred, 10)  # divide into 10 equal groups
+  ) %>%
+  group_by(decile) %>%
+  summarise(
+    N = n(),
+    Mean_Pred = mean(pred),
+    Observed = mean(y),
+    Events = sum(y)
+  ) %>%
+  rowwise() %>%
+  mutate(
+    CI = list(binom.confint(Events, N, methods = "wilson"))
+  ) %>%
+  unnest_wider(CI) %>%
+  select(decile, Mean_Pred, Observed, lower, upper) %>%
+  mutate(
+    Mean_Pred = Mean_Pred * 100,
+    Observed = Observed * 100,
+    lower = lower * 100,
+    upper = upper * 100
+  )
+
+ggplot(calib_bin, aes(x = Mean_Pred, y = Observed)) +
+  geom_point(size = 3, color = "black") +
+  geom_errorbar(aes(ymin = lower, ymax = upper), width = 0.8, color = "black") +
+  geom_line(color = "black") +
+  geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "gray50") +
+  labs(
+    title = "Calibration Curve (Deciles of Predicted Risk)",
+    x = "Mean Predicted Mortality (%)",
+    y = "Observed Mortality (%)"
+  ) +
+  coord_equal() +
+  theme_minimal(base_size = 14)
+
+
+# -------------------------------------------------------------------------
+# 05. Brier score 
+boot_brier <- function(data, indices) {
+  d <- data[indices, ]
+  y <- y_full
+  p <- d$pred_lasso
+  p_bar <- mean(y, na.rm = TRUE)
+  brier <- mean((y - p)^2, na.rm = TRUE)
+  brier_null <- p_bar * (1 - p_bar)
+  brier_scaled <- 1 - brier / brier_null
+  return(c(brier, brier_scaled))
+}
+boot_score <- boot(data = df_boot, statistic = boot_brier, R = 100)
+
+# Extract estimates and CIs
+brier_est <- boot_score$t0[1]
+scaled_est <- boot_score$t0[2]
+
+brier_ci <- quantile(boot_score$t[, 1], c(0.025, 0.975), na.rm = TRUE)
+scaled_ci <- quantile(boot_score$t[, 2], c(0.025, 0.975), na.rm = TRUE)
+
+brier_summary <- tibble(
+  Metric = c("Brier Score", "Scaled Brier Score"),
+  Estimate = c(brier_est, scaled_est),
+  CI_Lower = c(brier_ci[1], scaled_ci[1]),
+  CI_Upper = c(brier_ci[2], scaled_ci[2])
+) %>%
+  mutate(across(where(is.numeric), round, 4))
+
+# -------------------------------------------------------------------------
+# 06. Risk Stratification
 boot_group_rate <- function(data, indices) {
   yb <- as.numeric(as.character(data$icumortality[indices]))
   grpb <- pred_risk_group[indices]
   tapply(yb, grpb, mean, na.rm = TRUE)
 }
 
-boot_res <- boot(data = df_model, statistic = boot_group_rate, R = 1000)
-ci_group <- apply(boot_res$t, 2, quantile, probs = c(0.025, 0.975), na.rm = TRUE)
-ci_group <- round(100 * ci_group, 1) # convert to percentage
+boot_rates <- boot(data = df_model, statistic = boot_group_rate, R = 1000)
+ci_group <- round(100 * apply(boot_rates$t, 2, quantile, probs = c(0.025, 0.975), na.rm = TRUE), 1) # convert to percentage
 
-# 5. Build summary table
-calib_summary <- data.frame(
-  Group = levels(risk_group),
+calib_summary <- tibble(
+  `Risk Group` = levels(pred_risk_group),
   N = group_sizes,
   Deaths = group_deaths,
   ObservedRatePct = round(group_rates, 1),
@@ -110,176 +209,44 @@ calib_summary <- data.frame(
   CI_Upper = ci_group[2, ]
 ) %>% 
   mutate(
-        `Observed Mortality (%)` = sprintf("%.1f", ObservedRatePct),
-        `95% CI (%)` = paste0(
-            sprintf("%.1f", CI_Lower),
-            "–",
-            sprintf("%.1f", CI_Upper)
-        )
+    `Observed Mortality (%)` = sprintf("%.1f", ObservedRatePct),
+    `95% CI (%)` = paste0(
+      sprintf("%.1f", CI_Lower),
+      "–",
+      sprintf("%.1f", CI_Upper)
+    )
   ) %>%
   select(
-    Group,
+    `Risk Group`,
     N,
     Deaths,
     `Observed Mortality (%)`,
-        `95% CI (%)`
+    `95% CI (%)`
   )
 
-calib_summary %>%
-  gt() %>%
-  # 1) Tab options: outer borders + inner verticals
+table1 <- calib_summary %>% 
+  gt() %>% 
   tab_options(
-    table.font.size                = 16,
-    table.align                    = "center",
-    column_labels.font.weight      = "bold",
-    data_row.padding               = px(6),
-    
-    # Outer border
-    table.border.top.style         = "solid",
-    table.border.top.width         = px(2),
-    table.border.bottom.style      = "solid",
-    table.border.bottom.width      = px(2),
-    table.border.left.style        = "solid",
-    table.border.left.width        = px(2),
-    table.border.right.style       = "solid",
-    table.border.right.width       = px(2),
-    
-    # Inner vertical lines
-    table_body.border.vertical.style = "solid",
-    table_body.border.vertical.width = px(1)
-  ) %>%
-  # 2) Center‐align all columns
-  cols_align(
-    align   = "center",
-    columns = everything()
-  ) %>%
-  # 3) Put the caption at the bottom
-  tab_caption(
-    caption  = "Table 1. Observed Mortality by Risk Group"
-  )
-tab
-#2
+    table.font.size = 16,
+    table.align     = "center",
+    column_labels.font.weight = "bold",
+    data_row.padding = px(6),
+    table.border.top.style    = "solid",
+    table.border.top.width    = px(2),
+    table.border.bottom.style = "solid",
+    table.border.bottom.width = px(2),
+    table.border.left.style   = "solid",
+    table.border.left.width   = px(2),
+    table.border.right.style  = "solid",
+    table.border.right.width  = px(2),
+    table_body.vlines.style   = "solid",
+    table_body.vlines.width   = px(1),
+    column_labels.vlines.style = "solid",
+    column_labels.vlines.width = px(1),
+    stub.border.style = "solid",
+    stub.border.width = px(1)
+  ) %>% 
+  cols_align(align = "center", columns = everything()) %>% 
+  tab_caption("Table 1. Observed Mortality by Risk Group")
 
-
-
-
-lasso_boot_brier <- function(data, indices) {
-  d <- data[indices, ]
-  X <- model.matrix(icumortality ~ ., data = d)[, -1]
-  y <- as.numeric(as.character(d$icumortality))
-  fit <- glmnet(X, y, family = "binomial", lambda = best_lambda)
-  pred <- as.vector(predict(fit, newx = X, type = "response"))
-  # Ensure y is 0/1 for BrierScore
-  y_bin <- ifelse(y %in% c(0, 1), y, NA)
-  if (any(is.na(y_bin))) stop("Non-binomial outcome detected in BrierScore calculation.")
-  BrierScore(pred, y_bin)
-}
-
-lasso_boot_calibration <- function(data, indices) {
-  d <- data[indices, ]
-  X <- model.matrix(icumortality ~ ., data = d)[, -1]
-  y <- as.numeric(as.character(d$icumortality))
-  fit <- glmnet(X, y, family = "binomial", lambda = best_lambda)
-  pred <- as.vector(predict(fit, newx = X, type = "response"))
-  logit_pred <- log(pred / (1 - pred))
-  cal_model <- glm(y ~ logit_pred, family = binomial)
-  c(intercept = coef(cal_model)[1], slope = coef(cal_model)[2])
-}
-
-
-
-set.seed(101)
-boot_brier      <- boot(data = df_model, statistic = lasso_boot_brier,      R = 1000)
-boot_freq       <- boot(data = df_model, statistic = lasso_boot_freq,       R = 1000)
-boot_cal        <- boot(data = df_model, statistic = lasso_boot_calibration,R = 1000)
-
-
-
-# Brier Score 95% CI
-boot.ci(boot_brier, type = "perc")
-
-# Variable selection frequency
-var_names <- colnames(model.matrix(icumortality ~ ., data = df_model)[, -1])
-coef_freq <- colMeans(boot_freq$t)
-coef_freq_df <- data.frame(Variable = var_names, SelectionRate = coef_freq)
-
-# Calibration slope & intercept summary
-calib_df <- as.data.frame(boot_cal$t)
-colnames(calib_df) <- c("Intercept", "Slope")
-summary(calib_df)
-
-# Risk group mortality CI
-# Use trimmed quantiles for CI (e.g., trim 5% from each tail)
-group_mortality_df <- as.data.frame(boot_riskgroup$t)
-colnames(group_mortality_df) <- c("Low", "Moderate", "High")
-trim <- 0.05
-ci_low     <- quantile(group_mortality_df$Low, probs = c(trim, 1-trim), na.rm = TRUE)
-ci_moderate<- quantile(group_mortality_df$Moderate, probs = c(trim, 1-trim), na.rm = TRUE)
-ci_high    <- quantile(group_mortality_df$High, probs = c(trim, 1-trim), na.rm = TRUE)
-
-means <- colMeans(group_mortality_df, na.rm = TRUE)
-
-risk_summary <- data.frame(
-  Group       = c("Low", "Moderate", "High"),
-  MeanMortality = round(100 * means, 1),
-  CI_Lower    = round(100 * c(ci_low[1], ci_moderate[1], ci_high[1]), 1),
-  CI_Upper    = round(100 * c(ci_low[2], ci_moderate[2], ci_high[2]), 1)
-)
-
-print(risk_summary)
-
-# -------------------------------------------------------------------------
-# 03. Compare ROC Curves (Visual)
-# -------------------------------------------------------------------------
-
-roc_glm   <- roc(df_model$icumortality, pred_glm)
-roc_lasso <- roc(df_model$icumortality, pred_lasso)
-
-plot(roc_glm,   col = "#0072B2", lwd = 2, main = "GLM vs LASSO ROC Curve")
-plot(roc_lasso, col = "#D55E00", lwd = 2, add = TRUE)
-legend("bottomright", legend = c("GLM", "LASSO"),
-       col = c("#0072B2", "#D55E00"), lwd = 2)
-
-# -------------------------------------------------------------------------
-# 04. Summarize Key Outputs
-# -------------------------------------------------------------------------
-
-auc_glm   <- auc(roc_glm)
-auc_lasso <- auc(roc_lasso)
-
-cat(sprintf("GLM AUC:   %.3f\n", auc_glm))
-cat(sprintf("LASSO AUC: %.3f\n", auc_lasso))
-
-print(coefs_lasso_df)
-
-# -------------------------------------------------------------------------
-# 05. (Optional) Risk Group Table (from earlier)
-# -------------------------------------------------------------------------
-
-risk_group <- cut(
-  pred_lasso,
-  breaks = c(0, 0.05, 0.20, 1),
-  labels = c("Low", "Moderate", "High"),
-  right = FALSE
-)
-
-cat("Risk Group vs Actual Mortality:\n")
-print(table(risk_group, df_model$icumortality))
-
-risk_summary <- data.frame(
-  group = levels(risk_group),
-  n = as.numeric(table(risk_group)),
-  deaths = tapply(as.numeric(as.character(df_model$icumortality)), risk_group, sum, na.rm = TRUE),
-  observed_mortality = 100 * tapply(as.numeric(as.character(df_model$icumortality)), risk_group, mean, na.rm = TRUE)
-)
-print(risk_summary)
-
-library(ggplot2)
-
-ggplot(risk_summary, aes(x = Group, y = MeanMortality)) +
-  geom_point(size = 3) +
-  geom_errorbar(aes(ymin = CI_Lower, ymax = CI_Upper), width = 0.2) +
-  labs(title = "Observed Mortality by Risk Group",
-       y = "Observed Mortality (%)",
-       x = "Risk Group") +
-  theme_minimal()
+#gtsave(table1, filename = "docs/images/calibration_table.png",zoom  = 2) 
