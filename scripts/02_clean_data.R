@@ -1,58 +1,54 @@
 # -------------------------------------------------------------------------
-# 01. Load Data & Dependencies
+# 01. Data Cleaning and Cohort Restriction Script
+# -------------------------------------------------------------------------
+# This script:
+#   - Loads raw data tables and dependencies
+#   - Restricts cohort to APACHE IVa adult ICU stays
+#   - Cleans and merges demographic and clinical data
+#   - Finalizes feature engineering and variable formatting
 # -------------------------------------------------------------------------
 
-source("scripts/01_load_data.R")
+source("scripts/01_data_load_and_connect.R")
 
-# -------------------------------------------------------------------------
-# 02. Restrict to APACHE IVa Patients Only (standardizes cohort)
-# -------------------------------------------------------------------------
-
-p_results_IVa <- p_results %>% 
+# --- Restrict to APACHE IVa Patients Only (standardizes cohort) ---
+p_results <- p_results %>% 
   filter(apacheversion == "IVa")
 
-# -------------------------------------------------------------------------
-# 03. Filter Demographics Table to Analysis Cohort
-# -------------------------------------------------------------------------
-
-p_demographics <- p_demographics %>% 
+# --- Filter Demographics Table to Analysis Cohort ---
+p_demographics <- p_demographics %>%
+  mutate(
+    age = trimws(age),
+    age = case_when(
+      age == "> 89" ~ 90,
+      age == ""     ~ NA_real_,
+      str_detect(age, "^\\d+$") ~ as.numeric(age),
+      TRUE ~ NA_real_
+    )
+  ) %>% 
   filter(
-    patientunitstayid %in% p_results_IVa$patientunitstayid,
-    age >= 18,                        # Exclude peds
+    patientunitstayid %in% p_results$patientunitstayid,
+    age >= 18,                        # Exclude pediatric patients
     icu_los_hours >= 4,               # Exclude ultra-short ICU stays
     hosp_to_icu_admit_hours >= 0      # Data sanity check
   ) %>%
   select(patientunitstayid, hosp_to_icu_admit_hours)
 
-# -------------------------------------------------------------------------
-# 04. Restrict All Data Tables to Analysis Cohort
-# -------------------------------------------------------------------------
-
-p_results_IVa <- p_results_IVa %>% filter(patientunitstayid %in% pull(p_demographics, patientunitstayid))
+# --- Restrict All Data Tables to Analysis Cohort ---
+p_results <- p_results %>% filter(patientunitstayid %in% pull(p_demographics, patientunitstayid))
 apache_var <- apache_var %>% filter(patientunitstayid %in% pull(p_demographics, patientunitstayid))
 
-# -------------------------------------------------------------------------
-# 05. Build Initial Modeling Dataset (merge all sources)
-# -------------------------------------------------------------------------
-
+# --- Build Initial Modeling Dataset (merge all columns) ---
 df_model <- apache_var %>%
   mutate(
-    aps = p_results_IVa$acutephysiologyscore, # Add APS score
-    icumortality = p_results_IVa$actualicumortality      # Add ICU mortality
+    aps = p_results$acutephysiologyscore, # Add APS score
+    icumortality = p_results$actualicumortality      # Add ICU mortality
   ) %>%
   left_join(p_demographics, by = "patientunitstayid")
 
-# -------------------------------------------------------------------------
-# 06. Clean Diagnosis (missing to NA, prep for grouping)
-# -------------------------------------------------------------------------
-
+# --- Clean Diagnosis (missing to NA, prep for grouping) ---
 df_model$admitdiagnosis[trimws(df_model$admitdiagnosis) == ""] <- NA
 
-
-# -------------------------------------------------------------------------
-# 07. Finalize Feature Engineering & Variable Formatting
-# -------------------------------------------------------------------------
-
+# --- Finalize Feature Engineering & Variable Formatting ---
 df_model <- df_model %>%
   filter(aps >= 0) %>%
   mutate(
@@ -75,12 +71,12 @@ df_model <- df_model %>%
       "Pneumonia" = c("PNEUMASPIR", "PNEUMBACT"),
       "Acute Cardiac Event" = c("CARDARREST", "AMI", "UNSTANGINA"),
       "GI Surg Obstruct/Perf" = c("S-GIOBSTRX", "S-GIPERFOR")
-      ) %>%
-      # lump all remaining rare categories
-      fct_lump_min(min = 41, other_level = "Other") %>%
-      fct_na_value_to_level(level = "Other"),    
+    ) %>%
+    # lump all remaining rare categories
+    fct_lump_min(min = 41, other_level = "Other") %>%
+    fct_na_value_to_level(level = "Other"),    
     # continuous variable hosp_to_icu_admit_hours is log transformed for right skewness.
-    # log1p =log(1+x), to handle zeroes. 
+    # log1p = log(1+x), to handle zeroes. 
     log_icu_hours = log1p(hosp_to_icu_admit_hours),
     
     # Ensure all binary and categorical predictors are factors
@@ -96,5 +92,8 @@ df_model <- df_model %>%
     amilocation        = as.factor(amilocation),
     midur              = as.factor(midur),
     readmit            = as.factor(readmit),
-    icumortality     = as.factor(icumortality)
+    icumortality       = as.factor(icumortality)
   )
+
+# --- Print summary of final cohort ---
+cat("Final cohort size:", nrow(df_model), "\n")
