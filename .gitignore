@@ -5,12 +5,8 @@
 .Ruserdata
 
 # Raw and processed data files (don’t push patient data!)
-data/
-*.csv
-*.tsv
-*.xlsx
-# Ignore SQLite files
-*.sqlite3
+data/eicu_v2_0_1.sqlite3
+!data/
 
 # Generated plots or model outputs
 outputs/
