@@ -7,6 +7,7 @@
 # Raw and processed data files (don’t push patient data!)
 data/eicu_v2_0_1.sqlite3
 !data/
+icu_mortality.Rproj
 
 # Generated plots or model outputs
 outputs/
@@ -24,3 +25,10 @@ _cache/
 
 # MacOS system file
 .DS_Store
+
+# Ignore Shiny app runtime files
+www/
+app.R
+
+# Ignore notes in docs
+docs/notes.md
