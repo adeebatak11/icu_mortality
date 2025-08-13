@@ -8,6 +8,10 @@
   </a>
 </p>
 
+<p align="center" style="color:red; font-weight:bold;">
+  Disclaimer: Not for clinical use — educational purposes only.
+</p>
+
 A prognostic predictive modeling project developing an ICU mortality risk prediction model using the eICU Collaborative Research Database. This project compares traditional logistic regression with LASSO penalized regression to predict in-hospital mortality for ICU patients. The final model prioritizes interpretability over algorithmic complexity.
 
 ### Project Structure
