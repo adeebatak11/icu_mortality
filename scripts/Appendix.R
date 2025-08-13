@@ -6,6 +6,7 @@
 #   2. APACHE IV validation set (Zimmerman et al., 2006)
 # -----------------------------------------------------------------------------
 
+source("scripts/03_feature_selection.R")  # Loads df_model and features
 
 # --- Parameters from APACHE IV paper ---
 
@@ -19,8 +20,8 @@ S_vh <- 0.9
 
 
 # Development cohort
-n_df <- 1718
-E_df <- 79
+n_df <- nrow(df_model)
+E_df <- sum(as.numeric(as.character(df_model$icumortality)))
 # p1 = 44, n_min = 3222, p2 = 2270
 p <- 23
 MOE <- 0.05
@@ -61,7 +62,6 @@ cat(sprintf("Required sample size: %.0f\n", max(n_1, n_2, n_3)))
 # -----------------------------------------------------------------------------
 # 02. Plotting Key Figures
 # -----------------------------------------------------------------------------
-source("scripts/03_feature_selection.R")  # Loads df_model and features
 
 # Fit regression tree (max depth = 3)
 tree_fit <- rpart(
@@ -91,3 +91,5 @@ rpart.plot(
 )
 box(lwd = 2)
 # dev.off()
+
+# Plotting viz related to EDA
