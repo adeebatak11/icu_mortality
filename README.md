@@ -1,16 +1,16 @@
 # ICU Mortality Risk Prediction Model
 
 ::: {align="center"}
-## [![Clinician Insights Dashboard Preview](docs/images/dashboard_preview.png)](https://adeebatak11.github.io/icu_mortality/)
+## <a href="https://adeebatak11.github.io/icu_mortality/">
+<img src="https://img.shields.io/badge/_Clinician_Insights_Dashboard-Open_Interactive_App-2ea44f?style=for-the-badge&logoColor=white" 
+     alt="Clinician Insights Dashboard" 
+     height="60">
+</a>
 :::
 
 A prognostic predictive modeling project developing an ICU mortality risk prediction model using the eICU Collaborative Research Database. This project compares traditional logistic regression with LASSO penalized regression to predict in-hospital mortality for ICU patients. The final model prioritizes interpretability over algorithmic complexity.
 
-## Dataset
-
-eICU Collaborative Research Database v2.0.1 - Multi-center ICU database with de-identified patient records. See `data/README.md` for detailed references.
-
-## Project Structure
+### Project Structure
 
 ```         
 icu_mortality/
@@ -54,10 +54,10 @@ icu_mortality/
     source("scripts/07_validate_model.R")
     ```
 
-## References
+### References
 
 This project follows established clinical prediction modeling guidelines and draws from key literature in ICU mortality prediction. See `docs/annotated_bibliography.md` for detailed references.
 
-## License
+### License
 
 This project uses the eICU Collaborative Research Database under the PhysioNet Credentialed Health Data License 1.5.0. The analysis code is available for research and educational purposes.
