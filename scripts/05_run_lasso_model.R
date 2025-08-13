@@ -59,11 +59,6 @@ roc_lasso <- roc(
   direction = "<"
 )
 
-pred_risk_group <- cut(
-  pred_lasso,
-  breaks = c(0, 0.05, 0.20, 1),
-  labels = c("Low", "Moderate", "High")
-)
-group_sizes <- as.numeric(table(pred_risk_group))
-group_deaths <- tapply(as.numeric(as.character(df_model$icumortality)), pred_risk_group, sum, na.rm = TRUE)
-group_rates <- 100 * tapply(as.numeric(as.character(df_model$icumortality)), pred_risk_group, mean, na.rm = TRUE)
+
+CI_LASSO <- ci.auc(roc_lasso, conf.level = 0.95, method = "bootstrap", boot.n = 1000, ci.type = "basic", boot.stratified = TRUE)
+

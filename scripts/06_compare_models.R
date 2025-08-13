@@ -28,7 +28,7 @@ glm_boot_auc <- function(data, indices) {
 
 boot_glm_auc <- boot(data = df_model, statistic = glm_boot_auc, R = 1000)
 mean_glm_auc <- mean(boot_glm_auc$t, na.rm = TRUE)
-ci_glm_trimmed <- quantile(boot_glm_auc$t, probs = c(0.05, 0.95), na.rm = TRUE)
+ci_glm <- quantile(boot_glm_auc$t, probs = c(0.025, 0.975), na.rm = TRUE)
 
 lasso_boot_auc <- function(data, indices) {
   d <- data[indices, ]
@@ -42,7 +42,7 @@ lasso_boot_auc <- function(data, indices) {
 
 boot_lasso_auc <- boot(data = df_model, statistic = lasso_boot_auc, R = 1000)
 mean_lasso_auc <- mean(boot_lasso_auc$t, na.rm = TRUE)
-ci_lasso_trimmed <- quantile(boot_lasso_auc$t, probs = c(0.05, 0.95), na.rm = TRUE)
+ci_lasso <- quantile(boot_lasso_auc$t, probs = c(0.025, 0.975), na.rm = TRUE)
 
 # -------------------------------------------------------------------------
 # 04. Visualize AUC Comparison
@@ -51,8 +51,8 @@ ci_lasso_trimmed <- quantile(boot_lasso_auc$t, probs = c(0.05, 0.95), na.rm = TR
 auc_plot_df <- data.frame(
   Model = c("GLM", "LASSO"),
   MeanAUC = c(mean_glm_auc, mean_lasso_auc),
-  CI_Lower = c(ci_glm_trimmed[1], ci_lasso_trimmed[1]),
-  CI_Upper = c(ci_glm_trimmed[2], ci_lasso_trimmed[2])
+  CI_Lower = c(ci_glm[1], ci_lasso[1]),
+  CI_Upper = c(ci_glm[2], ci_lasso[2])
 ) %>% 
   mutate(
     AUC_Label = sprintf("%.3f \u00B1 %.3f", MeanAUC, (CI_Upper - CI_Lower) / 2)
@@ -68,7 +68,7 @@ p1 <- ggplot(auc_plot_df, aes(x = Model, y = MeanAUC)) +
     x = NULL,
     caption = "Estimated via bootstrap resampling (n = 1,000)"
   ) +
-  ylim(0.75, 0.93) +
+  ylim(0.5, 1) +
   theme_bw(base_size = 14) +
   theme(
     panel.border = element_rect(color = "black", fill = NA, linewidth = 0.8),
