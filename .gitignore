@@ -31,4 +31,19 @@ www/
 app.R
 
 # Ignore notes in docs
+docs/notes.mdicu_mortality.Rproj
+.Rprofile
+
+# allow the ShinyLive demo app
+!shinylive_app/**
+!shinylive_app/app.R
+!shinylive_app/www/**
+
+# rsconnect deployment cache (safe to keep or ignore; ignoring keeps repo clean)
+rsconnect/
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+
 docs/notes.md
