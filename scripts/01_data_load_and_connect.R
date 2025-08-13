@@ -29,24 +29,23 @@ db_path <- here::here("data", "eicu_v2_0_1.sqlite3")
 stopifnot(file.exists(db_path))
 con <- dbConnect(RSQLite::SQLite(), db_path)
 
-
 # --- Load Core Data Tables ---
 # Load basic patient demographics
 p_demographics <- dbGetQuery(
   con,
-  paste(readLines(here::here("sql", "basic_demographics.sql")), collapse = "\n")
+  paste(readLines(here::here("scripts", "sql", "basic_demographics.sql")), collapse = "\n")
 )
 
 # Load APACHE IVa prediction variables
 apache_var <- dbGetQuery(
   con,
-  paste(readLines(here::here("sql", "apache_pred_var.sql")), collapse = "\n")
+  paste(readLines(here::here("scripts", "sql", "apache_pred_var.sql")), collapse = "\n")
 )
 
 # Load APACHE predictions and actual patient outcomes
 p_results <- dbGetQuery(
   con,
-  paste(readLines(here::here("sql", "apache_patient_results.sql")), collapse = "\n")
+  paste(readLines(here::here("scripts", "sql", "apache_patient_results.sql")), collapse = "\n")
 )
 
 # --- Disconnect from Database ---

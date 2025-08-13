@@ -24,7 +24,7 @@ p_demographics <- p_demographics %>%
       str_detect(age, "^\\d+$") ~ as.numeric(age),
       TRUE ~ NA_real_
     )
-  ) %>% 
+  )  %>% 
   filter(
     patientunitstayid %in% p_results$patientunitstayid,
     age >= 18,                        # Exclude pediatric patients
@@ -50,7 +50,8 @@ df_model$admitdiagnosis[trimws(df_model$admitdiagnosis) == ""] <- NA
 
 # --- Finalize Feature Engineering & Variable Formatting ---
 df_model <- df_model %>%
-  filter(aps >= 0) %>%
+  filter(aps >= 0,
+         age >= 18) %>%
   mutate(
     icumortality = case_when(
       icumortality == "ALIVE"   ~ 0,
