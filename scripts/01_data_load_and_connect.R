@@ -25,7 +25,7 @@ pkgs_needed <- c(
 invisible(lapply(pkgs_needed, install_if_needed))
 
 # --- Connect to SQLite Database ---
-db_path <- here::here("data", "eicu_v2_0_1.sqlite3")
+db_path <- here::here("data", "YOUR_DATABASE_NAME.sqlite3")
 stopifnot(file.exists(db_path))
 con <- dbConnect(RSQLite::SQLite(), db_path)
 
